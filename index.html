@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Saturasi Teror: Goa Tambang Realistis</title>
+    <title>Saturasi Teror: Jumpscare Brutal</title>
     <style>
         body {
             margin: 0;
@@ -32,14 +32,14 @@
             pointer-events: none;
             z-index: 5;
             opacity: 0;
-            transition: opacity 0.5s;
+            transition: opacity 0.3s;
         }
         #instructions {
             position: absolute;
             top: 50%; left: 50%;
             transform: translate(-50%, -50%);
             color: white; text-align: center;
-            background: rgba(5, 5, 5, 0.95);
+            background: rgba(5, 5, 5, 0.98);
             padding: 30px; border: 2px solid #550000;
             border-radius: 5px; cursor: pointer; z-index: 20;
             box-shadow: 0 0 20px #ff000033;
@@ -77,7 +77,7 @@
 
     <div id="instructions">
         <h1 style="color: #8b0000; letter-spacing: 3px;">DEEP MINING SHAFT #04</h1>
-        <p>Struktur goa tidak stabil. Sesuatu yang lapar mengejarmu dari belakang.</p>
+        <p>Struktur goa tidak stabil. Sesuatu mengejarmu dari belakang.</p>
         <p style="font-weight: bold; color: #ff3333; margin-top: 20px; animation: blink 1.5s infinite;">[ KLIK UNTUK MASUK KE KEGELAPAN ]</p>
     </div>
 
@@ -88,30 +88,27 @@
 
     <div id="game-win">
         KAMU BERHASIL LOLOS!
-        <p style="font-size: 20px; color: white; margin-top: 20px; font-weight: normal;">Kamu melihat cahaya matahari dan selamat dari kejaran makhluk purba.</p>
+        <p style="font-size: 20px; color: white; margin-top: 20px; font-weight: normal;">Kamu melihat cahaya matahari dan selamat.</p>
     </div>
 
     <script>
-        // --- PROSEDURAL TEKSTUR BATU (BUMP MAP) ---
-        // Membuat tekstur noise langsung dari kode agar dinding terlihat kasar & berlubang realistis
+        // --- PROSEDURAL TEKSTUR BATU ---
         function generateNoiseTexture() {
             const canvas = document.createElement('canvas');
             canvas.width = 512; canvas.height = 512;
             const ctx = canvas.getContext('2d');
             ctx.fillStyle = '#222222'; ctx.fillRect(0, 0, 512, 512);
             
-            // Beri bercak kasar mika/batu halus
             for (let i = 0; i < 30000; i++) {
                 let x = Math.random() * 512;
                 let y = Math.random() * 512;
-                let size = Math.random() * 2 + 1;
                 let shade = Math.floor(Math.random() * 80);
                 ctx.fillStyle = `rgb(${shade},${shade},${shade})`;
-                ctx.fillRect(x, y, size, size);
+                ctx.fillRect(x, y, 2, 2);
             }
             const texture = new THREE.CanvasTexture(canvas);
             texture.wrapS = THREE.RepeatWrapping; texture.wrapT = THREE.RepeatWrapping;
-            texture.repeat.set(4, 30); // Pengulangan sepanjang lorong
+            texture.repeat.set(4, 30);
             return texture;
         }
 
@@ -121,12 +118,12 @@
         const container = document.getElementById('canvas-container');
         const bloodOverlay = document.getElementById('blood-overlay');
         const scene = new THREE.Scene();
-        scene.fog = new THREE.FogExp2(0x010102, 0.22); // Kabut super tebal membatasi pandangan
+        scene.fog = new THREE.FogExp2(0x010102, 0.22);
 
         const camera = new THREE.PerspectiveCamera(65, window.innerWidth / window.innerHeight, 0.1, 1000);
         const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.toneMapping = THREE.ACESFilmicToneMapping; // Efek pencahayaan sinematik/realistis
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
         container.appendChild(renderer.domElement);
 
         let isGameOver = false, isGameWin = false, gameStarted = false;
@@ -136,7 +133,8 @@
         const tunnelHeight = 4.5;
         const tunnelLength = 400;
 
-        camera.position.set(0, 1.8, 185); // Tinggi mata manusia realistis
+        const playerHeight = 1.8; // Konstanta tinggi mata manusia
+        camera.position.set(0, playerHeight, 185);
         const playerSpeed = 0.15;
         const move = { forward: false, backward: false, left: false, right: false };
 
@@ -170,121 +168,70 @@
         document.addEventListener('keyup', (e) => handleKey(e, false));
 
         // --- ARSITEKTUR LORONG TAMBANG ---
-        // Material Dinding Berbatu Realistis
         const rockMaterial = new THREE.MeshStandardMaterial({
-            color: 0x1c1a18,
-            bumpMap: bumpTex,
-            bumpScale: 0.05,
-            roughness: 0.95,
-            metalness: 0.1
+            color: 0x1c1a18, bumpMap: bumpTex, bumpScale: 0.05, roughness: 0.95, metalness: 0.1
         });
 
-        // Lantai Tanah Goa
         const floorGeo = new THREE.PlaneGeometry(tunnelWidth, tunnelLength);
         const floor = new THREE.Mesh(floorGeo, rockMaterial);
-        floor.rotation.x = -Math.PI / 2;
-        scene.add(floor);
+        floor.rotation.x = -Math.PI / 2; scene.add(floor);
 
-        // Atap Goa
         const roofGeo = new THREE.PlaneGeometry(tunnelWidth, tunnelLength);
         const roof = new THREE.Mesh(roofGeo, rockMaterial);
-        roof.rotation.x = Math.PI / 2; roof.position.y = tunnelHeight;
-        scene.add(roof);
+        roof.rotation.x = Math.PI / 2; roof.position.y = tunnelHeight; scene.add(roof);
 
-        // Dinding Kanan & Kiri
         const wallGeo = new THREE.PlaneGeometry(tunnelLength, tunnelHeight);
         const leftWall = new THREE.Mesh(wallGeo, rockMaterial);
-        leftWall.rotation.y = Math.PI / 2; leftWall.position.set(-tunnelWidth / 2, tunnelHeight / 2, 0);
-        scene.add(leftWall);
+        leftWall.rotation.y = Math.PI / 2; leftWall.position.set(-tunnelWidth / 2, tunnelHeight / 2, 0); scene.add(leftWall);
 
         const rightWall = new THREE.Mesh(wallGeo, rockMaterial);
-        rightWall.rotation.y = -Math.PI / 2; rightWall.position.set(tunnelWidth / 2, tunnelHeight / 2, 0);
-        scene.add(rightWall);
+        rightWall.rotation.y = -Math.PI / 2; rightWall.position.set(tunnelWidth / 2, tunnelHeight / 2, 0); scene.add(rightWall);
 
-        // --- DETAIL STRUKTUR: BALOK PENYANGGA & REL KERETA ---
         const woodMat = new THREE.MeshStandardMaterial({ color: 0x21140e, roughness: 0.9 });
         const ironMat = new THREE.MeshStandardMaterial({ color: 0x3a3a3a, roughness: 0.5, metalness: 0.8 });
 
         for (let z = -tunnelLength/2; z <= tunnelLength/2; z += 10) {
-            // Tiang Penyangga Atas dan Samping (Balok Kayu)
-            const postL = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.12, tunnelHeight), woodMat);
-            postL.position.set(-tunnelWidth/2 + 0.15, tunnelHeight/2, z); scene.add(postL);
-
-            const postR = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.12, tunnelHeight), woodMat);
-            postR.position.set(tunnelWidth/2 - 0.15, tunnelHeight/2, z); scene.add(postR);
-
-            const beamT = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, tunnelWidth), woodMat);
-            beamT.rotation.z = Math.PI / 2; beamT.position.set(0, tunnelHeight - 0.1, z); scene.add(beamT);
-
-            // Bantalan Kayu Rel di lantai (Ties)
-            const tie = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.05, 0.2), woodMat);
-            tie.position.set(0, 0.02, z); scene.add(tie);
-            const tie2 = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.05, 0.2), woodMat);
-            tie2.position.set(0, 0.02, z + 5); scene.add(tie2);
+            const postL = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.12, tunnelHeight), woodMat); postL.position.set(-tunnelWidth/2 + 0.15, tunnelHeight/2, z); scene.add(postL);
+            const postR = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.12, tunnelHeight), woodMat); postR.position.set(tunnelWidth/2 - 0.15, tunnelHeight/2, z); scene.add(postR);
+            const beamT = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, tunnelWidth), woodMat); beamT.rotation.z = Math.PI / 2; beamT.position.set(0, tunnelHeight - 0.1, z); scene.add(beamT);
+            const tie = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.05, 0.2), woodMat); tie.position.set(0, 0.02, z); scene.add(tie);
+            const tie2 = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.05, 0.2), woodMat); tie2.position.set(0, 0.02, z + 5); scene.add(tie2);
         }
 
-        // Besi Rel Panjang (Left & Right Rails)
         const railGeo = new THREE.BoxGeometry(0.05, 0.06, tunnelLength);
         const railL = new THREE.Mesh(railGeo, ironMat); railL.position.set(-0.8, 0.05, 0); scene.add(railL);
         const railR = new THREE.Mesh(railGeo, ironMat); railR.position.set(0.8, 0.05, 0); scene.add(railR);
 
-
         // --- SISTEM COHAYA: SENTER PEMAIN ---
         const flashlight = new THREE.SpotLight(0xfffbe6, 3, 28, Math.PI / 5.5, 0.5, 1.2);
         scene.add(flashlight);
-        flashlight.target = new THREE.Object3D();
-        scene.add(flashlight.target);
+        flashlight.target = new THREE.Object3D(); scene.add(flashlight.target);
 
-        // Cahaya ambient luar biasa redup agar bayangan terlihat pekat realistis
-        const ambient = new THREE.AmbientLight(0x020203, 0.2);
-        scene.add(ambient);
-
+        const ambient = new THREE.AmbientLight(0x020203, 0.2); scene.add(ambient);
 
         // --- MUSUH TINGKAT TINGGI: WENDIGO ---
         const wendigo = new THREE.Group();
         const bodyMat = new THREE.MeshStandardMaterial({ color: 0x050505, roughness: 1.0 });
 
-        // Tubuh kurus tinggi ringkih
-        const torso = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.05, 2.5), bodyMat);
-        torso.position.y = 1.6; wendigo.add(torso);
+        const torso = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.05, 2.5), bodyMat); torso.position.y = 1.6; wendigo.add(torso);
+        const head = new THREE.Mesh(new THREE.SphereGeometry(0.22, 8, 8), bodyMat); head.position.y = 2.9; wendigo.add(head);
 
-        // Kepala Tengkorak / Lonjong
-        const head = new THREE.Mesh(new THREE.SphereGeometry(0.22, 8, 8), bodyMat);
-        head.position.y = 2.9; wendigo.add(head);
-
-        // Tanduk Ranting Mengerikan (Antlers)
         const antlerMat = new THREE.MeshBasicMaterial({ color: 0x010101 });
         for(let i = 0; i < 4; i++) {
-            const horn = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.3, 0.03), antlerMat);
-            horn.position.set(i % 2 === 0 ? 0.15 : -0.15, 3.1 + (i*0.05), 0);
-            horn.rotation.z = i % 2 === 0 ? 0.5 + (i*0.2) : -0.5 - (i*0.2);
-            wendigo.add(horn);
+            const horn = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.3, 0.03), antlerMat); horn.position.set(i % 2 === 0 ? 0.15 : -0.15, 3.1 + (i*0.05), 0); horn.rotation.z = i % 2 === 0 ? 0.5 + (i*0.2) : -0.5 - (i*0.2); wendigo.add(horn);
         }
 
-        // Mata Merah Bersinar (Glow Intans)
         const eyeMat = new THREE.MeshBasicMaterial({ color: 0xff0000 });
         const eyeL = new THREE.Mesh(new THREE.SphereGeometry(0.04, 6, 6), eyeMat); eyeL.position.set(-0.09, 2.9, -0.18);
-        const eyeR = new THREE.Mesh(new THREE.SphereGeometry(0.04, 6, 6), eyeMat); eyeR.position.set(0.09, 2.9, -0.18);
-        wendigo.add(eyeL, eyeR);
+        const eyeR = new THREE.Mesh(new THREE.SphereGeometry(0.04, 6, 6), eyeMat); eyeR.position.set(0.09, 2.9, -0.18); wendigo.add(eyeL, eyeR);
 
-        // Lengan Cacat Panjang Menjuntai
-        const armL = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.02, 2), bodyMat);
-        armL.position.set(-0.25, 1.8, -0.2); armL.rotation.z = 0.2; armL.rotation.x = -0.4;
-        wendigo.add(armL);
+        const armL = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.02, 2), bodyMat); armL.position.set(-0.25, 1.8, -0.2); armL.rotation.z = 0.2; armL.rotation.x = -0.4; wendigo.add(armL);
+        const armR = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.02, 2), bodyMat); armR.position.set(0.25, 1.8, -0.2); armR.rotation.z = -0.2; armR.rotation.x = -0.4; wendigo.add(armR);
 
-        const armR = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.02, 2), bodyMat);
-        armR.position.set(0.25, 1.8, -0.2); armR.rotation.z = -0.2; armR.rotation.x = -0.4;
-        wendigo.add(armR);
+        const wendigoGlow = new THREE.PointLight(0xff0000, 1.8, 8); wendigoGlow.position.y = 2; wendigo.add(wendigoGlow);
 
-        // Lampu Merah Lembut mengikuti wendigo untuk menerangi sekitarnya secara gaib
-        const wendigoGlow = new THREE.PointLight(0xff0000, 1.8, 8);
-        wendigoGlow.position.y = 2; wendigo.add(wendigoGlow);
-
-        wendigo.position.set(0, 0, 196); // Muncul di belakang
-        scene.add(wendigo);
-
+        wendigo.position.set(0, 0, 196); scene.add(wendigo);
         const wendigoBaseSpeed = 0.146;
-
 
         // --- ANIMASI GAME & LOGIKA ---
         const distanceUI = document.getElementById('distance');
@@ -292,15 +239,17 @@
         const gameOverUI = document.getElementById('game-over');
         const gameWinUI = document.getElementById('game-win');
 
-        let deathTimer = 0;
+        // NEW LOGIC: Death Sequence variables
+        let jumpscareActive = false;
+        let deathSequenceTimer = 0;
+        const jumpscareDuration = 60; // frames (~1 detik)
 
         function animate() {
             requestAnimationFrame(animate);
             const time = clock.getElapsedTime();
 
             if (gameStarted && !isGameOver && !isGameWin) {
-                
-                // 1. UPDATE SENTER & EFEK RUSAK/BERKEDIP
+                // ... (Update Senter, AI Wendigo, Pergerakan Pemain, Tabrakan Dinding, HUD)
                 flashlight.position.copy(camera.position);
                 const dir = new THREE.Vector3();
                 camera.getWorldDirection(dir);
@@ -308,69 +257,52 @@
 
                 const distance = camera.position.distanceTo(wendigo.position);
 
-                // Jika wendigo dekat (di bawah 15 meter), senter mulai berkedip rusak karena gelombang mistis
                 if (distance < 16 && Math.random() < (16 - distance) * 0.06) {
-                    flashlight.intensity = 0.1; // Redup total mendadak
+                    flashlight.intensity = 0.1;
                 } else {
-                    flashlight.intensity = 2.5 + Math.sin(time * 2) * 0.1; // Efek binar senter normal
+                    flashlight.intensity = 2.5 + Math.sin(time * 2) * 0.1;
                 }
 
-                // 2. PERGERAKAN PEMAIN & HEAD BOBBING (KAMERA BERJALAN)
                 const forwardVec = new THREE.Vector3(dir.x, 0, dir.z).normalize();
                 const sideVec = new THREE.Vector3().crossVectors(camera.up, forwardVec).normalize();
-
                 let isMoving = false;
                 if (move.forward) { camera.position.addScaledVector(forwardVec, playerSpeed); isMoving = true; }
                 if (move.backward) { camera.position.addScaledVector(forwardVec, -playerSpeed); isMoving = true; }
                 if (move.left) { camera.position.addScaledVector(sideVec, playerSpeed); isMoving = true; }
                 if (move.right) { camera.position.addScaledVector(sideVec, -playerSpeed); isMoving = true; }
 
-                // Simulasi ayunan kepala manusia saat berjalan/berlari
                 if (isMoving) {
-                    camera.position.y = 1.8 + Math.sin(time * 12) * 0.06;
+                    camera.position.y = playerHeight + Math.sin(time * 12) * 0.06;
                 } else {
-                    camera.position.y = 1.8 + Math.sin(time * 1.5) * 0.01; // Efek nafas halus saat diam
+                    camera.position.y = playerHeight + Math.sin(time * 1.5) * 0.01;
                 }
 
-                // Batasan fisik dinding terowongan (Tabrakan Dinding)
                 camera.position.x = Math.max(-tunnelWidth/2 + 0.6, Math.min(tunnelWidth/2 - 0.6, camera.position.x));
-                camera.position.z = Math.min(190, camera.position.z); // Pembatas jalan buntu belakang
+                camera.position.z = Math.min(190, camera.position.z);
 
-                // 3. AI PERGERAKAN WENDIGO
                 wendigo.lookAt(camera.position.x, wendigo.position.y, camera.position.z);
                 const wendigoDir = new THREE.Vector3().subVectors(camera.position, wendigo.position);
                 wendigoDir.y = 0; wendigoDir.normalize();
-                
-                // Semakin dekat ke finish, Wendigo semakin marah dan cepat!
-                let speedMultiplier = camera.position.z < 0 ? 1.04 : 1.0;
-                wendigo.position.addScaledVector(wendigoDir, wendigoBaseSpeed * speedMultiplier);
+                wendigo.position.addScaledVector(wendigoDir, wendigoBaseSpeed * (camera.position.z < 0 ? 1.04 : 1.0));
+                armL.rotation.x = -0.4 + Math.sin(time * 30) * 0.1; armR.rotation.x = -0.4 + Math.cos(time * 30) * 0.1;
 
-                // Tambahkan efek getaran tangan Wendigo (creepy twitch)
-                armL.rotation.x = -0.4 + Math.sin(time * 30) * 0.1;
-                armR.rotation.x = -0.4 + Math.cos(time * 30) * 0.1;
-
-                // 4. UPDATE HUD & UI VIGNETTE
                 if (distance > 20) {
-                    distanceUI.innerText = "Stabil (Jauh)"; distanceUI.style.color = "#33ff33";
-                    bloodOverlay.style.opacity = 0;
+                    distanceUI.innerText = "Stabil (Jauh)"; distanceUI.style.color = "#33ff33"; bloodOverlay.style.opacity = 0;
                 } else if (distance > 8) {
-                    distanceUI.innerText = "TERDETEKSI MENDEKAT!"; distanceUI.style.color = "#ffff33";
-                    bloodOverlay.style.opacity = (20 - distance) / 20; // Layar mulai menggelap merah di sudut
+                    distanceUI.innerText = "MENDEKAT!"; distanceUI.style.color = "#ffff33"; bloodOverlay.style.opacity = (20 - distance) / 20;
                 } else {
-                    distanceUI.innerText = "MUTLAK DI BELAKANGMU!!"; distanceUI.style.color = "#ff0000";
-                    bloodOverlay.style.opacity = 0.8;
+                    distanceUI.innerText = "DI BELAKANGMU!!"; distanceUI.style.color = "#ff0000"; bloodOverlay.style.opacity = 0.8;
                 }
 
-                const remainingDistance = Math.max(0, Math.round(camera.position.z - (-185)));
-                progressUI.innerText = remainingDistance + " meter";
+                progressUI.innerText = Math.max(0, Math.round(camera.position.z - (-185))) + " meter";
 
-                // 5. STRUKTUR JUMPSCARE KEMATIAN (TOUCH PLAYER = JUMPSCARE & DEATH)
+                // KONDISI GAME OVER: MAKAN OLEH WENDIGO (JUMPSCARE DIMULAI)
                 if (distance < 1.7) {
                     isGameOver = true;
                     document.exitPointerLock();
+                    jumpscareActive = true; // AKTIFKAN URUTAN JUMPSCARE
                 }
 
-                // KONDISI MENANG
                 if (camera.position.z <= -185) {
                     isGameWin = true;
                     document.exitPointerLock();
@@ -378,26 +310,36 @@
                 }
             } 
             
-            // JUMPSCARE ANIMATION SEQUENCE (Saat Kalah)
-            else if (isGameOver && deathTimer < 120) {
-                deathTimer++;
+            // --- URUTAN JUMPSCARE BRUTAL (Triggered when isGameOver && jumpscareActive) ---
+            else if (isGameOver && jumpscareActive && !isGameWin) {
+                deathSequenceTimer++;
 
-                // Paksa Kamera berputar 180 derajat langsung melihat wajah mengerikan Wendigo
-                camera.lookAt(wendigo.position.x, wendigo.position.y + 2.5, wendigo.position.z);
+                // FASA 1: SNAP KAMERA INSTAN (Hanya berjalan sekali pada frame pertama kematian)
+                if (deathSequenceTimer === 1) {
+                    // Paksa kamera snap langsung di depan wajah Wendigo
+                    camera.position.set(wendigo.position.x, wendigo.position.y + 2.6, wendigo.position.z + 1.1);
+                    // Paksa kamera melihat langsung ke matanya
+                    camera.lookAt(wendigo.position.x, wendigo.position.y + 2.7, wendigo.position.z);
+                    // Paksa overlay darah langsung penuh
+                    bloodOverlay.style.background = "rgba(180, 0, 0, 0.98)";
+                    bloodOverlay.style.opacity = 1;
+                }
                 
-                // Dekatkan kamera secara paksa ke wajah wendigo demi efek jumpscare maksimal
-                camera.position.lerp(new THREE.Vector3(wendigo.position.x, wendigo.position.y + 2.4, wendigo.position.z + 1.2), 0.1);
-                
-                // Efek Kamera Berguncang Hebat (Violent Camera Shake)
-                camera.position.x += (Math.random() - 0.5) * 0.15;
-                camera.position.y += (Math.random() - 0.5) * 0.15;
+                // FASA 2: GETARAN KAMERA VIOLENT (Berjalan selama durasi jumpscare setelah snap)
+                if (deathSequenceTimer > 1 && deathSequenceTimer < jumpscareDuration) {
+                    // Jangkauan shake yang jauh lebih besar
+                    const shakeRange = 0.25; 
+                    camera.position.x += (Math.random() - 0.5) * shakeRange;
+                    camera.position.y += (Math.random() - 0.5) * shakeRange;
+                    camera.position.z += (Math.random() - 0.5) * shakeRange;
+                }
 
-                // Flash layar jadi merah darah penuh secara instan
-                bloodOverlay.style.background = "rgba(180, 0, 0, 0.95)";
-                bloodOverlay.style.opacity = 1;
-
-                if(deathTimer >= 100) {
+                // FASA 3: TAMPILKAN GAME OVER UI (Setelah durasi getaran selesai)
+                if (deathSequenceTimer >= jumpscareDuration) {
                     gameOverUI.style.display = 'block';
+                    jumpscareActive = false; // Matikan urutan aktif
+                    // Pastikan kamera tetap menatap monster
+                    camera.lookAt(wendigo.position.x, wendigo.position.y + 2.7, wendigo.position.z);
                 }
             }
 
@@ -405,9 +347,7 @@
         }
 
         window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
+            camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight);
         });
 
         animate();
