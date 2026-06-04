@@ -3,73 +3,110 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SHAFT #05: PSYCHOLOGICAL HORROR EDITION</title>
+    <title>SHAFT: EVOLUTION (PART 1) - GOLD EDITION</title>
     <style>
+        :root {
+            --primary-red: #ff1a1a;
+            --glow-red: rgba(255, 26, 26, 0.6);
+            --bg-dark: #030305;
+        }
+
         body {
-            margin: 0; overflow: hidden; background-color: #000;
+            margin: 0; overflow: hidden; background-color: var(--bg-dark);
             font-family: 'Courier New', Courier, monospace; user-select: none;
+            color: #fff;
         }
-        #canvas-container { width: 100vw; height: 100vh; }
+        #canvas-container { width: 100vw; height: 100vh; display: none; }
         
-        /* INDIKATOR UI ATAS */
+        /* MODERN CINEMATIC MAIN MENU */
+        #main-menu {
+            position: absolute; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: radial-gradient(circle at center, #140505 0%, #050508 100%);
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            z-index: 100; transition: opacity 0.8s ease;
+        }
+        .menu-title {
+            font-size: 56px; color: #8a0000; letter-spacing: 12px; margin-bottom: 5px;
+            font-weight: 900; text-align: center;
+            animation: pulseGlow 3s infinite alternate;
+        }
+        .menu-subtitle { color: #555; font-size: 11px; margin-bottom: 50px; letter-spacing: 4px; text-transform: uppercase; }
+        
+        .menu-btn {
+            background: rgba(15, 5, 5, 0.7); border: 1px solid #5a0f0f; color: #bbb;
+            padding: 16px 45px; font-size: 13px; font-family: inherit; font-weight: bold;
+            cursor: pointer; letter-spacing: 4px; margin: 10px; width: 280px; text-align: center;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+        .menu-btn:hover {
+            background: #6a0000; color: #fff; 
+            box-shadow: 0 0 20px var(--glow-red), inset 0 0 5px rgba(255,255,255,0.2); 
+            transform: translateY(-2px);
+        }
+
+        @keyframes pulseGlow {
+            0% { text-shadow: 0 0 10px rgba(138, 0, 0, 0.5); transform: scale(1); }
+            100% { text-shadow: 0 0 25px #ff0000, 0 0 5px #fff; transform: scale(1.02); }
+        }
+
+        /* OVERLAYS & INTERFACES */
+        .sub-panel {
+            display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            background: rgba(4, 4, 6, 0.98); border: 1px solid #4a1212; padding: 35px;
+            width: 420px; z-index: 110; box-shadow: 0 0 40px rgba(0,0,0,0.9);
+        }
+        .panel-close {
+            background: #1a1a1a; border: 1px solid #333; color: #888; padding: 6px 12px; 
+            cursor: pointer; float: right; font-family: inherit; transition: all 0.2s;
+        }
+        .panel-close:hover { color: #fff; background: #c00; }
+
+        /* ADVANCED LOADING SCREEN */
+        #loading-screen {
+            display: none; position: absolute; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: #000; z-index: 200; flex-direction: column; justify-content: center; align-items: center;
+            transition: opacity 0.6s ease;
+        }
+        #loading-bar-container {
+            width: 400px; height: 3px; background: #0f0f15; border: 1px solid #222; margin-top: 25px;
+            border-radius: 2px; overflow: hidden;
+        }
+        #loading-bar { width: 0%; height: 100%; background: var(--primary-red); box-shadow: 0 0 12px #ff3333; transition: width 0.1s ease; }
+        #loading-text { font-size: 14px; color: #aaa; letter-spacing: 2px; font-weight: bold; }
+        #loading-log { font-size: 11px; color: #444; margin-top: 12px; font-style: italic; }
+
+        /* HUD IN-GAME SYSTEM */
         #ui {
-            position: absolute; top: 20px; left: 20px; color: #ff3333;
-            font-size: 15px; text-shadow: 2px 2px 4px #000; pointer-events: none; z-index: 10;
-            opacity: 0; transition: opacity 1s;
+            position: absolute; top: 25px; left: 25px; color: var(--primary-red);
+            font-size: 14px; text-shadow: 2px 2px 5px #000; pointer-events: none; z-index: 10;
+            opacity: 0; transition: opacity 1s; letter-spacing: 1px;
         }
-
-        /* HUD STATS (STAMINA, BATERAI, FEAR BAR) */
         .hud-container {
-            position: absolute; bottom: 30px; width: 220px; height: 8px;
-            background: rgba(20,20,20,0.6); border: 1px solid #333; z-index: 10;
+            position: absolute; bottom: 35px; width: 240px; height: 6px;
+            background: rgba(10,10,12,0.8); border: 1px solid #252525; z-index: 10; display: none;
         }
-        .hud-bar { width: 100%; height: 100%; transition: width 0.1s; }
+        .hud-bar { width: 100%; height: 100%; }
+        #stamina-container { left: 35px; border-color: #500; }
+        #stamina-bar { background: #d61c1c; transition: width 0.1s, background-color 0.3s; }
+        #battery-container { left: 305px; border-color: #005; }
+        #battery-bar { background: #00e6b8; }
+        #fear-container { left: 575px; border-color: #407; }
+        #fear-bar { background: #8822ff; width: 0%; transition: width 0.2s; }
+        .hud-label { position: absolute; top: -20px; left: 0; font-size: 10px; font-weight: bold; letter-spacing: 1px; text-shadow: 1px 1px 2px #000; }
         
-        #stamina-container { left: 30px; border-color: #4a0000; }
-        #stamina-bar { background: #e62121; }
+        /* SCREEN FILTERS */
+        #vignette { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; background: radial-gradient(circle, rgba(0,0,0,0) 15%, rgba(0,0,0,0.99) 100%); pointer-events: none; z-index: 4; display: none; }
+        #blood-overlay { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; background: radial-gradient(circle, rgba(255,0,0,0) 25%, rgba(70,0,0,0.9) 100%); pointer-events: none; z-index: 5; opacity: 0; display: none; transition: opacity 0.3s; }
+        #subtitles { position: absolute; bottom: 20%; left: 50%; transform: translateX(-50%); color: #ffffff; font-size: 20px; text-align: center; text-shadow: 0 0 10px #000, 0 0 15px var(--primary-red); z-index: 15; pointer-events: none; width: 75%; font-weight: bold; letter-spacing: 1px; transition: opacity 0.4s; opacity: 0; }
         
-        #battery-container { left: 270px; border-color: #004a4a; }
-        #battery-bar { background: #00ffcc; }
-        
-        #fear-container { left: 510px; border-color: #3a005c; display: none; }
-        #fear-bar { background: #9933ff; width: 0%; }
-
-        .hud-label {
-            position: absolute; top: -18px; left: 0; font-size: 11px; 
-            font-weight: bold; text-shadow: 1px 1px 2px #000; letter-spacing: 1px;
-        }
-        
-        #vignette {
-            position: absolute; top: 0; left: 0; width: 100vw; height: 100vh;
-            background: radial-gradient(circle, rgba(0,0,0,0) 10%, rgba(0,0,0,0.98) 100%);
-            pointer-events: none; z-index: 4;
-        }
-        #blood-overlay {
-            position: absolute; top: 0; left: 0; width: 100vw; height: 100vh;
-            background: radial-gradient(circle, rgba(255,0,0,0) 30%, rgba(90,0,0,0.85) 100%);
-            pointer-events: none; z-index: 5; opacity: 0;
-        }
-        #subtitles {
-            position: absolute; bottom: 18%; left: 50%; transform: translateX(-50%);
-            color: #ffffff; font-size: 19px; text-align: center;
-            text-shadow: 0 0 8px #000, 0 0 10px #ff3333; z-index: 15;
-            pointer-events: none; width: 80%; font-weight: bold; letter-spacing: 1px;
-            transition: opacity 0.3s; opacity: 0;
-        }
-        #instructions {
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            color: white; text-align: center; background: rgba(5, 5, 5, 0.98);
-            padding: 40px; border: 1px solid #4a0505; z-index: 20;
-            box-shadow: 0 0 40px rgba(255, 0, 0, 0.12); cursor: pointer;
-        }
-        
-        /* SCREEN LAYAR 5 CABANG ENDING BERBEDA */
-        .end-screen { display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; font-weight: bold; z-index: 30; }
-        #game-over { color: #ff0000; font-size: 45px; text-shadow: 0 0 30px #ff0000; letter-spacing: 5px; }
+        /* ENDINGS SYSTEM */
+        .end-screen { display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; font-weight: bold; z-index: 30; width: 85%; }
+        #game-over { color: #ff0000; font-size: 45px; text-shadow: 0 0 35px #ff0000; letter-spacing: 6px; }
         #game-win { color: #33ff33; font-size: 40px; text-shadow: 0 0 20px #00ff00; }
-        #normal-end-screen { color: #ffaa00; font-size: 40px; text-shadow: 0 0 25px #ffaa00; letter-spacing: 3px; }
-        #true-ending { color: #00ffff; font-size: 42px; text-shadow: 0 0 30px #00ffff; letter-spacing: 4px; }
-        #fear-ending { color: #b300ff; font-size: 42px; text-shadow: 0 0 35px #9933ff; letter-spacing: 3px; }
+        #true-ending { color: #ffaa00; font-size: 38px; text-shadow: 0 0 30px #ffaa00; letter-spacing: 2px; }
+        #secret-ending { color: #00ffff; font-size: 42px; text-shadow: 0 0 35px #00ffff; letter-spacing: 4px; }
+        #fear-ending { color: #b300ff; font-size: 42px; text-shadow: 0 0 40px #9933ff; letter-spacing: 3px; }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
@@ -78,68 +115,127 @@
     <audio id="breathing" loop><source src="breath.mp3" type="audio/mpeg"></audio>
     <audio id="monster"><source src="scream.mp3" type="audio/mpeg"></audio>
 
+    <div id="loading-screen">
+        <div id="loading-text">MENGUNDUH INTERNAL MEMORI: 0%</div>
+        <div id="loading-bar-container"><div id="loading-bar"></div></div>
+        <div id="loading-log">Mengamankan jaringan sensor tambang...</div>
+    </div>
+
+    <div id="main-menu">
+        <div class="menu-title">SHAFT #04</div>
+        <div class="menu-subtitle">DEEP MINING SYSTEM • VOL. 1</div>
+        <button class="menu-btn" onclick="startLoadingSequence()">MULAI BERTAHAN</button>
+        <button class="menu-btn" onclick="togglePanel('settings-panel', true)">PENGATURAN</button>
+        <button class="menu-btn" onclick="togglePanel('wishlist-panel', true)">WISHLIST PART 2</button>
+    </div>
+
+    <div id="settings-panel" class="sub-panel">
+        <button class="panel-close" onclick="togglePanel('settings-panel', false)">X</button>
+        <h3 style="color:var(--primary-red); margin-top:0; letter-spacing: 2px;">KONFIGURASI</h3>
+        <hr style="border-color:#222; margin: 15px 0;">
+        <label style="font-size:12px; color:#aaa; letter-spacing: 1px;">SENSITIVITAS MOUSE</label><br>
+        <input type="range" id="sens-slider" min="6" max="32" value="16" style="width:100%; margin:12px 0;" onchange="updateSensitivity(this.value)">
+        <p style="font-size:11px; color:#666; line-height:1.4;">* Gameplay Note: Hidupkan/matikan senter secara manual memakai tombol fisik [1] dan [2] pada keyboard.</p>
+    </div>
+
+    <div id="wishlist-panel" class="sub-panel">
+        <button class="panel-close" onclick="togglePanel('wishlist-panel', false)">X</button>
+        <h3 style="color:#00ffff; margin-top:0; letter-spacing: 2px;">SHAFT PART 2: THE DESCENT</h3>
+        <hr style="border-color:#222; margin: 15px 0;">
+        <p style="font-size:12px; line-height:1.6; color:#bbb;">
+            Kelanjutan langsung eksklusif dari <b>True Ending</b> Volume 1. Jiwamu terperangkap dan diseret paksa menuju inti terdalam kompleks tambang Deep-4. Sanggupkah kamu bangun dari kegelapan?
+        </p>
+        <button class="menu-btn" style="width:100%; margin:15px 0 0 0; font-size:12px;" onclick="alert('Sinkronisasi database berhasil! Terdaftar di internal wishlist.')">MASUKKAN DAFTAR TUNGGU</button>
+    </div>
+
     <div id="canvas-container"></div>
     <div id="vignette"></div>
     <div id="blood-overlay"></div>
     <div id="subtitles"></div>
     
-    <div id="stamina-container" class="hud-container">
-        <div class="hud-label" style="color:#e62121;">STAMINA (ASMA)</div>
-        <div id="stamina-bar" class="hud-bar"></div>
-    </div>
-    <div id="battery-container" class="hud-container">
-        <div class="hud-label" style="color:#00ffcc;">BATERAI SENTER [1=ON, 2=OFF]</div>
-        <div id="battery-bar" class="hud-bar"></div>
-    </div>
-    <div id="fear-container" class="hud-container">
-        <div class="hud-label" style="color:#9933ff;">TINGKAT KETAKUTAN MENTAL</div>
-        <div id="fear-bar" class="hud-bar"></div>
-    </div>
+    <div id="stamina-container" class="hud-container"><div class="hud-label" style="color:#e62121;">STAMINA (ASMA)</div><div id="stamina-bar" class="hud-bar"></div></div>
+    <div id="battery-container" class="hud-container"><div class="hud-label" style="color:#00ffcc;">KAPASITAS BATERAI [1=ON / 2=OFF]</div><div id="battery-bar" class="hud-bar"></div></div>
+    <div id="fear-container" class="hud-container"><div class="hud-label" style="color:#9933ff;">DEGRADASI MENTAL (FEAR BAR)</div><div id="fear-bar" class="hud-bar"></div></div>
     
     <div id="ui">
-        <div>Detektor Anomali: <span id="distance">Hening...</span></div>
-        <div>Sisa Terowongan: <span id="progress">570m</span></div>
+        <div>ANOMALI: <span id="distance">Mendeteksi...</span></div>
+        <div>SISA TRACK: <span id="progress">570m</span></div>
     </div>
 
-    <div id="instructions">
-        <h1 style="color: #7a0000; letter-spacing: 6px; margin-bottom: 5px;">SHAFT TAMBANG DEEP-4</h1>
-        <p style="color: #999; font-size: 12px; margin-top: 0; font-weight: bold;">[ UPGRADE: HOROR PSIKOLOGIS ]</p>
-        <p style="margin: 25px 0; color: #ccc; max-width: 450px; line-height: 1.6; font-size: 14px; text-align: left;">
-            • Gunakan <b>WASD / Panah</b> untuk bergerak.<br>
-            • Tekan Tombol <b>1</b> untuk Menyalakan Senter, Tombol <b>2</b> untuk Mematikan.<br>
-            • Hemat baterai! Cari <b>Kantong Logistik</b> di jalan untuk isi ulang.<br>
-            • Jangan biarkan makhluk itu terlalu dekat, atau lu bakal <b>mati jantungan</b>!
-        </p>
-        <p style="font-weight: bold; color: #b30000; text-align: center;">[ KLIK DI SINI UNTUK MASUK KELURUSAN GHOIB ]</p>
-    </div>
-
-    <div id="game-over" class="end-screen">
-        BAD ENDING: MATI TERCABIK
-        <p style="font-size: 15px; color: #666; margin-top: 20px; font-weight: normal;">Tubuhmu hancur dicabik di kegelapan goa.<br>Tekan <b style="color: #fff;">F5</b> untuk mengulang.</p>
-    </div>
-    <div id="game-win" class="end-screen">
-        GOOD ENDING: EVAKUASI BERHASIL
-        <p style="font-size: 18px; color: white; margin-top: 20px; font-weight: normal;">Staminamu aman dan kamu berhasil merangkak keluar menembus fajar!</p>
-    </div>
-    <div id="normal-end-screen" class="end-screen">
-        NORMAL ENDING: TEROR BELUM USAI
-        <p style="font-size: 17px; color: #aaa; margin-top: 20px; font-weight: normal;">Kamu pingsan kelelahan di pintu keluar... Dia menemukanmu lagi.</p>
-    </div>
+    <div id="game-over" class="end-screen">BAD ENDING: MATI TERCABIK<p style="font-size: 15px; color: #666; margin-top: 20px; font-weight: normal;">Tubuhmu hancur dieksekusi dalam kegelapan abadi.<br>Tekan <b style="color: #fff;">F5</b> untuk memuat ulang memori.</p></div>
+    <div id="game-win" class="end-screen">GOOD ENDING: BERHASIL KABUR<p style="font-size: 17px; color: white; margin-top: 20px; font-weight: normal;">Staminamu stabil, kamu sukses keluar menembus fajar terbit!</p></div>
+    
     <div id="true-ending" class="end-screen">
-        TRUE ENDING: THE SURVIVOR
-        <p style="font-size: 18px; color: #fff; margin-top: 20px; font-weight: normal;">Dengan helm pelindung cadangan oksigen penuh, kamu menutup rapat gerbang tambang selamanya!</p>
+        CANONICAL TRUE ENDING: TEROR BELUM USAI
+        <p style="font-size: 15px; color: #ff3333; margin-top: 25px; font-weight: normal; line-height: 1.8;">
+            Kamu ambruk tak berdaya tepat di mulut keluar akibat komplikasi asma ekstrem...<br>
+            Makhluk itu merayap keluar dan menyeret tubuhmu kembali ke dasar kegelapan.<br><br>
+            <b style="color: #00ffff; font-size:19px; letter-spacing: 2px;">[ BERSAMBUNG KE SHAFT: PART 2 ]</b>
+        </p>
     </div>
-    <div id="fear-ending" class="end-screen">
-        PSYCHOSIS ENDING: MATI KETAKUTAN
-        <p style="font-size: 16px; color: #999; margin-top: 20px; font-weight: normal;">Jantungmu berhenti mendadak akibat kepanikan ekstrem.<br>Kegelapan menelan jiwamu sebelum monster itu menyentuhmu. (Tekan <b style="color: #fff;">F5</b>)</p>
-    </div>
+    
+    <div id="secret-ending" class="end-screen">SECRET ENDING: THE SURVIVOR<p style="font-size: 17px; color: #fff; margin-top: 20px; font-weight: normal;">Menggunakan sisa pelindung helm baja, kamu mengunci gerbang tambang rapat-rapat!</p></div>
+    <div id="fear-ending" class="end-screen">PSYCHOSIS ENDING: MATI KETAKUTAN<p style="font-size: 15px; color: #bbb; margin-top: 20px; font-weight: normal;">Jantungmu gagal berfungsi akibat gelombang kepanikan saraf psikotik total. (Tekan <b style="color: #fff;">F5</b>)</p></div>
 
     <script>
+        function togglePanel(id, show) { document.getElementById(id).style.display = show ? 'block' : 'none'; }
+
+        let mouseSensitivity = 0.0016;
+        function updateSensitivity(val) { mouseSensitivity = val * 0.0001; }
+
+        // SMOOTH TRANSITION LOADING LOADING SCREEN
+        function startLoadingSequence() {
+            togglePanel('main-menu', false);
+            const ls = document.getElementById('loading-screen');
+            const lBar = document.getElementById('loading-bar');
+            const lText = document.getElementById('loading-text');
+            const lLog = document.getElementById('loading-log');
+            ls.style.display = 'flex';
+
+            let progress = 0;
+            const logMessages = [
+                "Mengunduh algoritma tekstur batuan goa purba...",
+                "Menyusun shader pantulan cahaya senter berintensitas tinggi...",
+                "Mengkalibrasi laju detak jantung dan kapasitas asma...",
+                "Membangun visualisasi kecerdasan buatan Wendigo...",
+                "Membuka isolasi gerbang tambang Deep-4... Sukses!"
+            ];
+
+            const interval = setInterval(() => {
+                progress += Math.floor(Math.random() * 5) + 2;
+                if (progress > 100) progress = 100;
+                
+                lBar.style.width = progress + "%";
+                lText.innerText = `MENGUNDUH INTERNAL MEMORI: ${progress}%`;
+                
+                if(progress < 20) lLog.innerText = logMessages[0];
+                else if(progress < 45) lLog.innerText = logMessages[1];
+                else if(progress < 65) lLog.innerText = logMessages[2];
+                else if(progress < 85) lLog.innerText = logMessages[3];
+                else lLog.innerText = logMessages[4];
+
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    // Fade out smoothly
+                    ls.style.opacity = 0;
+                    setTimeout(() => {
+                        ls.style.display = 'none';
+                        document.getElementById('canvas-container').style.display = 'block';
+                        document.getElementById('vignette').style.display = 'block';
+                        document.getElementById('blood-overlay').style.display = 'block';
+                        document.querySelectorAll('.hud-container').forEach(el => el.style.display = 'block');
+                        container.requestPointerLock();
+                    }, 600);
+                }
+            }, 50);
+        }
+
+        // --- THREE.JS PROCEDURAL GRAPHICS ---
         function createAdvancedRockTexture() {
             const canvas = document.createElement('canvas'); canvas.width = 512; canvas.height = 512;
-            const ctx = canvas.getContext('2d'); ctx.fillStyle = '#141211'; ctx.fillRect(0, 0, 512, 512);
-            for (let i = 0; i < 30000; i++) {
-                let x = Math.random() * 512; let y = Math.random() * 512; let shade = Math.floor(Math.random() * 35);
+            const ctx = canvas.getContext('2d'); ctx.fillStyle = '#11100f'; ctx.fillRect(0, 0, 512, 512);
+            for (let i = 0; i < 35000; i++) {
+                let x = Math.random() * 512; let y = Math.random() * 512; let shade = Math.floor(Math.random() * 30);
                 ctx.fillStyle = `rgb(${shade},${shade},${shade})`; ctx.fillRect(x, y, 1, 3);
             }
             const texture = new THREE.CanvasTexture(canvas);
@@ -156,10 +252,9 @@
         const staminaBar = document.getElementById('stamina-bar');
         const batteryBar = document.getElementById('battery-bar');
         const fearBar = document.getElementById('fear-bar');
-        const fearContainer = document.getElementById('fear-container');
 
         const scene = new THREE.Scene();
-        scene.fog = new THREE.FogExp2(0x020204, 0.26);
+        scene.fog = new THREE.FogExp2(0x010103, 0.25);
 
         const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
         const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -167,7 +262,7 @@
         renderer.toneMapping = THREE.ACESFilmicToneMapping;
         container.appendChild(renderer.domElement);
 
-        let isGameOver = false, isGameWin = false, isNormalEnding = false, isTrueEnding = false, isFearEnding = false, gameStarted = false;
+        let isGameOver = false, isGameWin = false, isTrueEnding = false, isSecretEnding = false, isFearEnding = false, gameStarted = false;
         let clock = new THREE.Clock();
 
         const tunnelWidth = 5.6; const tunnelHeight = 4.3; const tunnelLength = 600;
@@ -177,15 +272,14 @@
         const walkSpeed = 0.085; const runSpeed = 0.180;
         const move = { forward: false, backward: false, left: false, right: false, sprint: false };
 
-        // STATS MECHANICAL DATA
         let stamina = 100; let isExhausted = false;
         const depletionRate = 0.13; const recoveryRate = 0.24;  
 
-        // UPGRADE SYSTEM BATERAI & FEAR SYSTEM
-        let battery = 100;
-        let flashlightOn = true;
-        const batteryDrainRate = 0.045; // Pengurangan konstan tiap frame saat hidup
+        let battery = 100; let flashlightOn = true; const batteryDrainRate = 0.045; 
         let fear = 0;
+
+        // Flashlight smoothing variables (LERP)
+        let currentFlashlightTarget = new THREE.Vector3();
 
         let chaseStarted = false, triggerSequenceActive = false, triggerTimer = 0;
         let milestonePassed = { m1: false, m2: false };
@@ -195,30 +289,23 @@
         const breatheSound = document.getElementById("breathing");
         const monsterSound = document.getElementById("monster");
 
-        // --- MOUSE LOCK CONTROL ---
-        const instructions = document.getElementById('instructions');
-        instructions.addEventListener('click', () => { container.requestPointerLock(); });
-
         document.addEventListener('pointerlockchange', () => {
             if (document.pointerLockElement === container) {
-                instructions.style.display = 'none';
                 if(!gameStarted) {
                     gameStarted = true;
-                    showSubtitle("Dada gua mulai sesak... asmanya jangan sampai kambuh di sini.", 4500);
+                    ui.style.opacity = 1;
+                    showSubtitle("Dada gua sesak banget... asmanya jangan sampai kumat di sini.", 4500);
                 }
-            } else if (!isGameOver && !isGameWin && !isNormalEnding && !isTrueEnding && !isFearEnding) {
-                instructions.style.display = 'block';
             }
         });
 
         document.addEventListener('mousemove', (e) => {
-            if (document.pointerLockElement !== container || isGameOver || isGameWin || isNormalEnding || isTrueEnding || isFearEnding) return;
-            camera.rotation.y -= e.movementX * 0.0016;
-            camera.rotation.x -= e.movementY * 0.0016;
+            if (document.pointerLockElement !== container || isGameOver || isGameWin || isTrueEnding || isSecretEnding || isFearEnding) return;
+            camera.rotation.y -= e.movementX * mouseSensitivity;
+            camera.rotation.x -= e.movementY * mouseSensitivity;
             camera.rotation.x = Math.max(-Math.PI/2.4, Math.min(Math.PI/2.4, camera.rotation.x));
         });
 
-        // INPUT ENGINE HANDLING (Ditambah tombol 1 & 2)
         document.addEventListener('keydown', (e) => {
             const key = e.key.toLowerCase();
             if (key === 'w' || e.key === 'ArrowUp') move.forward = true;
@@ -227,15 +314,8 @@
             if (key === 'd' || e.key === 'ArrowRight') move.right = true;
             if (e.key === 'Shift') move.sprint = true;
             
-            // KONTROL POWER SENTER MANUAL
-            if (e.key === '1' && battery > 0) {
-                flashlightOn = true;
-                showSubtitle("* Senter dinyalakan *", 1000);
-            }
-            if (e.key === '2') {
-                flashlightOn = false;
-                showSubtitle("* Senter dimatikan *", 1000);
-            }
+            if (e.key === '1' && battery > 0) { flashlightOn = true; showSubtitle("* Senter dinyalakan *", 1000); }
+            if (e.key === '2') { flashlightOn = false; showSubtitle("* Senter dimatikan *", 1000); }
         });
 
         document.addEventListener('keyup', (e) => {
@@ -254,151 +334,131 @@
             }
         }
 
-        // --- MAP ENVIRONMENT BUILDING ---
-        const rockMaterial = new THREE.MeshStandardMaterial({ color: 0x141312, bumpMap: advancedRockTex, bumpScale: 0.08, roughness: 0.75 });
+        // --- MAP ASSEMBLY ---
+        const rockMaterial = new THREE.MeshStandardMaterial({ color: 0x121110, bumpMap: advancedRockTex, bumpScale: 0.08, roughness: 0.8 });
         const floor = new THREE.Mesh(new THREE.PlaneGeometry(tunnelWidth, tunnelLength), rockMaterial); floor.rotation.x = -Math.PI / 2; scene.add(floor);
         const roof = new THREE.Mesh(new THREE.PlaneGeometry(tunnelWidth, tunnelLength), rockMaterial); roof.rotation.x = Math.PI / 2; roof.position.y = tunnelHeight; scene.add(roof);
         const leftWall = new THREE.Mesh(new THREE.PlaneGeometry(tunnelLength, tunnelHeight), rockMaterial); leftWall.rotation.y = Math.PI / 2; leftWall.position.set(-tunnelWidth / 2, tunnelHeight / 2, 0); scene.add(leftWall);
         const rightWall = new THREE.Mesh(new THREE.PlaneGeometry(tunnelLength, tunnelHeight), rockMaterial); rightWall.rotation.y = -Math.PI / 2; rightWall.position.set(tunnelWidth / 2, tunnelHeight / 2, 0); scene.add(rightWall);
 
-        const woodMat = new THREE.MeshStandardMaterial({ color: 0x160f0b, roughness: 0.95 });
-
+        const woodMat = new THREE.MeshStandardMaterial({ color: 0x140d0a, roughness: 0.9 });
         for (let z = -tunnelLength/2; z <= tunnelLength/2; z += 11) {
             const postL = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.1, tunnelHeight), woodMat); postL.position.set(-tunnelWidth/2 + 0.15, tunnelHeight/2, z); scene.add(postL);
             const postR = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.1, tunnelHeight), woodMat); postR.position.set(tunnelWidth/2 - 0.15, tunnelHeight/2, z); scene.add(postR);
         }
 
-        // Partikel Mobile Friendly
-        const particleCount = 300; const particleGeo = new THREE.BufferGeometry(); const positions = new Float32Array(particleCount * 3);
+        const particleCount = 400; const particleGeo = new THREE.BufferGeometry(); const positions = new Float32Array(particleCount * 3);
         for (let i = 0; i < particleCount * 3; i += 3) {
             positions[i] = (Math.random() - 0.5) * tunnelWidth; positions[i+1] = Math.random() * tunnelHeight; positions[i+2] = (Math.random() - 0.5) * tunnelLength;
         }
         particleGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-        const dustParticles = new THREE.Points(particleGeo, new THREE.PointsMaterial({ color: 0x999999, size: 0.025, transparent: true, opacity: 0.35 }));
+        const dustParticles = new THREE.Points(particleGeo, new THREE.PointsMaterial({ color: 0xcccccc, size: 0.02, transparent: true, opacity: 0.25 }));
         scene.add(dustParticles);
 
         const shadowGlitch = new THREE.Mesh(new THREE.BoxGeometry(0.6, 2.3, 0.2), new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0 }));
         shadowGlitch.position.set(0, 1.1, -50); scene.add(shadowGlitch);
 
-        // SECRET LOGISTIC HELMET
         const helmetGroup = new THREE.Group();
-        const helmetBase = new THREE.Mesh(new THREE.SphereGeometry(0.18, 8, 8, 0, Math.PI*2, 0, Math.PI/2), new THREE.MeshStandardMaterial({color: 0xffcc00, roughness:0.2}));
+        const helmetBase = new THREE.Mesh(new THREE.SphereGeometry(0.18, 8, 8, 0, Math.PI*2, 0, Math.PI/2), new THREE.MeshStandardMaterial({color: 0xffaa00, roughness:0.3}));
         helmetGroup.add(helmetBase);
-        const helmetGlow = new THREE.PointLight(0xffaa00, 1.2, 4); helmetGlow.position.y = 0.2; helmetGroup.add(helmetGlow);
+        const helmetGlow = new THREE.PointLight(0xff7700, 1.2, 4); helmetGlow.position.y = 0.2; helmetGroup.add(helmetGlow);
         helmetGroup.position.set(-2.0, 0.3, 100); scene.add(helmetGroup);
 
-        // UPGRADE: SPAWN KANTONG BATERAI (DISEBAR DI LORONG)
         const batteryPouches = [];
         function spawnBatteryPouch(x, z) {
             const pouch = new THREE.Group();
-            const box = new THREE.Mesh(new THREE.BoxGeometry(0.35, 0.25, 0.25), new THREE.MeshStandardMaterial({color: 0x1e3f20, roughness: 0.5})); // Kantong Hijau Militer
-            box.position.y = 0.125; pouch.add(box);
-            const indicator = new THREE.Mesh(new THREE.SphereGeometry(0.03, 4, 4), new THREE.MeshBasicMaterial({color: 0x00ffff}));
-            indicator.position.set(0, 0.26, 0); pouch.add(indicator);
-            const light = new THREE.PointLight(0x00ffff, 0.8, 3); light.position.y = 0.3; pouch.add(light);
-            pouch.position.set(x, 0, z);
-            scene.add(pouch);
-            batteryPouches.push(pouch);
+            const box = new THREE.Mesh(new THREE.BoxGeometry(0.35, 0.25, 0.25), new THREE.MeshStandardMaterial({color: 0x163518, roughness: 0.6})); box.position.y = 0.125; pouch.add(box);
+            const indicator = new THREE.Mesh(new THREE.SphereGeometry(0.025, 4, 4), new THREE.MeshBasicMaterial({color: 0x00ffff})); indicator.position.set(0, 0.26, 0); pouch.add(indicator);
+            const light = new THREE.PointLight(0x00ffff, 1.0, 3.5); light.position.y = 0.3; pouch.add(light);
+            pouch.position.set(x, 0, z); scene.add(pouch); batteryPouches.push(pouch);
         }
-        // Spawn di koordinat z strategis
-        spawnBatteryPouch(1.8, 190);
-        spawnBatteryPouch(-1.8, -10);
-        spawnBatteryPouch(1.5, -140);
+        spawnBatteryPouch(1.8, 190); spawnBatteryPouch(-1.8, -10); spawnBatteryPouch(1.5, -140);
 
-        // LIGHTING FLASH-LIGHT (Intensitas Ditingkatkan Jadi 7.5 Sesuai Request)
-        const flashlight = new THREE.SpotLight(0xfff3d1, 7.5, 35, Math.PI / 6.5, 0.55, 1.1); scene.add(flashlight);
+        // HIGH INTENSITY FLASHLIGHT CONFIG (7.5 RATING)
+        const flashlight = new THREE.SpotLight(0xfff5db, 7.5, 38, Math.PI / 6.2, 0.6, 1.0); scene.add(flashlight);
         flashlight.target = new THREE.Object3D(); scene.add(flashlight.target);
-        const ambient = new THREE.AmbientLight(0x010103, 0.06); scene.add(ambient);
+        const ambient = new THREE.AmbientLight(0x010102, 0.05); scene.add(ambient);
 
-        // MONSTER WENDIGO
+        // MAKHLUK ANOMALI WENDIGO
         const wendigo = new THREE.Group();
-        const bodyMat = new THREE.MeshStandardMaterial({ color: 0x010101, roughness: 1.0 });
-        const torso = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.02, 2.6), bodyMat); torso.position.y = 1.6; wendigo.add(torso);
-        const head = new THREE.Mesh(new THREE.SphereGeometry(0.22, 8, 8), bodyMat); head.position.y = 2.9; wendigo.add(head);
-        const eyeMat = new THREE.MeshBasicMaterial({ color: 0xee0000 });
-        const eyeL = new THREE.Mesh(new THREE.SphereGeometry(0.035, 6, 6), eyeMat); eyeL.position.set(-0.08, 2.9, 0.16);
-        const eyeR = new THREE.Mesh(new THREE.SphereGeometry(0.035, 6, 6), eyeMat); eyeR.position.set(0.08, 2.9, 0.16); wendigo.add(eyeL, eyeR);
-        const wendigoGlow = new THREE.PointLight(0xff0000, 0, 7); wendigoGlow.position.y = 2.8; wendigo.add(wendigoGlow);
+        const bodyMat = new THREE.MeshStandardMaterial({ color: 0x020202, roughness: 1.0 });
+        const torso = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.02, 2.7), bodyMat); torso.position.y = 1.6; wendigo.add(torso);
+        const head = new THREE.Mesh(new THREE.SphereGeometry(0.23, 8, 8), bodyMat); head.position.y = 2.95; wendigo.add(head);
+        const eyeMat = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+        const eyeL = new THREE.Mesh(new THREE.SphereGeometry(0.035, 6, 6), eyeMat); eyeL.position.set(-0.08, 2.95, 0.16);
+        const eyeR = new THREE.Mesh(new THREE.SphereGeometry(0.035, 6, 6), eyeMat); eyeR.position.set(0.08, 2.95, 0.16); wendigo.add(eyeL, eyeR);
+        const wendigoGlow = new THREE.PointLight(0xff0000, 0, 8); wendigoGlow.position.y = 2.8; wendigo.add(wendigoGlow);
         wendigo.position.set(0, -10, 320); scene.add(wendigo);
         
-        const wendigoBaseSpeed = 0.144;
+        const wendigoBaseSpeed = 0.145;
 
-        const distanceUI = document.getElementById('distance');
-        const progressUI = document.getElementById('progress');
-        const gameOverUI = document.getElementById('game-over');
-        const gameWinUI = document.getElementById('game-win');
-        const normalEndUI = document.getElementById('normal-end-screen');
-        const trueEndingUI = document.getElementById('true-ending');
+        const distanceUI = document.getElementById('distance'); const progressUI = document.getElementById('progress');
+        const gameOverUI = document.getElementById('game-over'); const gameWinUI = document.getElementById('game-win');
+        const trueEndingUI = document.getElementById('true-ending'); const secretEndingUI = document.getElementById('secret-ending');
         const fearEndingUI = document.getElementById('fear-ending');
 
-        let jumpscareActive = false, deathSequenceTimer = 0, jumpscareDuration = 75, jumpCamPos = new THREE.Vector3();
+        let jumpscareActive = false, deathSequenceTimer = 0, jumpscareDuration = 70, jumpCamPos = new THREE.Vector3(), normalEndingTimer = 0, normalEndingSequenceStage = 0;
 
-        // --- MAIN ENGINE LOOP ---
+        // --- GAME SYSTEM LOOP ---
         function animate() {
             requestAnimationFrame(animate);
             const time = clock.getElapsedTime();
 
-            // SENSOR GETAR KAMERA DARURAT PAS KETAKUTAN EKSTREM
-            let fearShake = (fear / 100) * 0.04;
-            let handShakeX = Math.sin(time * 1.4) * (0.0012 + fearShake);
-            let handShakeY = Math.cos(time * 1.6) * (0.0016 + fearShake);
-            if(!isNormalEnding && !isFearEnding) { camera.rotation.x += handShakeX; camera.rotation.y += handShakeY; }
+            // ADVANCED CAMERA SHAKE & DISTORSI PSIKOTIK MENTAL
+            let fearFactor = (fear / 100);
+            let fearShake = fearFactor * 0.05;
+            let handShakeX = Math.sin(time * 1.6) * (0.001 + fearShake);
+            let handShakeY = Math.cos(time * 1.9) * (0.0014 + fearShake);
+            if(!isTrueEnding && !isFearEnding) { camera.rotation.x += handShakeX; camera.rotation.y += handShakeY; }
 
-            // Vignette Pulse Modifikasi Degradasi Mental
-            let pulseRate = (chaseStarted || isNormalEnding) ? (isExhausted ? 9 : 6) : 1.8;
-            let pulseIntensity = isExhausted ? 0.15 : (chaseStarted ? 0.05 : 0.01) + (fear/250);
+            // Dynamic Motion Blur Simulator via style
+            if(fear > 70 && gameStarted) {
+                container.style.filter = `blur(${Math.min(3, (fear-70)/10)}px)`;
+            } else { container.style.filter = 'none'; }
+
+            let pulseRate = (chaseStarted || isTrueEnding) ? (isExhausted ? 9.5 : 6.5) : 1.5;
+            let pulseIntensity = isExhausted ? 0.18 : (chaseStarted ? 0.06 : 0.01) + (fear/220);
             let heartBeat = 1 + Math.sin(time * pulseRate) * pulseIntensity;
             vignette.style.transform = `scale(${heartBeat})`;
-            vignette.style.filter = (isExhausted || fear > 50) ? `blur(${Math.min(5, (fear-50)/10 + 2)}px)` : "none";
 
-            // Dust Motion Loop
             const posAttr = dustParticles.geometry.attributes.position;
             for (let i = 1; i < posAttr.count * 3; i += 3) {
-                posAttr.array[i] -= 0.0018; if (posAttr.array[i] < 0) posAttr.array[i] = tunnelHeight;
+                posAttr.array[i] -= 0.002; if (posAttr.array[i] < 0) posAttr.array[i] = tunnelHeight;
             }
             posAttr.needsUpdate = true;
 
-            if (gameStarted && !isGameOver && !isGameWin && !isNormalEnding && !isTrueEnding && !isFearEnding) {
+            if (gameStarted && !isGameOver && !isGameWin && !isTrueEnding && !isSecretEnding && !isFearEnding) {
+                // AAA POLISH: SMOOTH LERP FLASHLIGHT FOLLOW ENGINE
                 flashlight.position.copy(camera.position);
-                const dir = new THREE.Vector3(); camera.getWorldDirection(dir);
-                flashlight.target.position.copy(camera.position).add(dir);
+                const actualCamDir = new THREE.Vector3(); camera.getWorldDirection(actualCamDir);
+                const targetPoint = new THREE.Vector3().copy(camera.position).add(actualCamDir);
+                currentFlashlightTarget.lerp(targetPoint, 0.12); // Efek berat/gemetar pada senter
+                flashlight.target.position.copy(currentFlashlightTarget);
 
-                // UPGRADE MECHANIC: DRAIN BATERAI SENTER & SWITCH CONTROL
                 if (flashlightOn && battery > 0) {
                     battery -= batteryDrainRate;
-                    if (battery <= 0) {
-                        battery = 0; flashlightOn = false;
-                        showSubtitle("* Baterai Habis! Senter Mati Total! *", 3000);
-                    }
+                    if (battery <= 0) { battery = 0; flashlightOn = false; showSubtitle("* Sistem Daya Kolaps! Senter Mati! *", 3000); }
                 }
                 batteryBar.style.width = battery + "%";
 
-                // AUDIO HOROR STAMINA
                 if (stamina < 25) {
-                    if (breatheSound.paused) breatheSound.play().catch(()=>{});
-                    breatheSound.volume = 1.0;
-                } else {
-                    breatheSound.volume = Math.max(0, breatheSound.volume - 0.02);
-                }
+                    if (breatheSound.paused) breatheSound.play().catch(()=>{}); breatheSound.volume = 1.0;
+                } else { breatheSound.volume = Math.max(0, breatheSound.volume - 0.03); }
 
-                // ENGINE PERGERAKAN PLAYER
                 let isMoving = (move.forward || move.backward || move.left || move.right);
                 let isSprinting = move.sprint && isMoving && !isExhausted && move.forward;
 
                 if (isSprinting) {
-                    stamina -= depletionRate;
-                    if (stamina <= 0) { stamina = 0; isExhausted = true; }
+                    stamina -= depletionRate; if (stamina <= 0) { stamina = 0; isExhausted = true; }
                 } else {
-                    stamina += recoveryRate;
-                    if (stamina >= 100) stamina = 100;
+                    stamina += recoveryRate; if (stamina >= 100) stamina = 100;
                     if (isExhausted && stamina > 25) isExhausted = false;
                 }
                 staminaBar.style.width = stamina + "%";
-                staminaBar.style.background = isExhausted ? "#444" : (stamina < 25 ? "#ffaa00" : "#e62121");
+                staminaBar.style.backgroundColor = isExhausted ? "#3a3a3a" : (stamina < 25 ? "#d27900" : "#d61c1c");
 
-                // SPEED VECTOR DETERMINATION
                 let currentSpeed = isSprinting ? runSpeed : walkSpeed;
-                const forwardVec = new THREE.Vector3(dir.x, 0, dir.z).normalize();
+                const forwardVec = new THREE.Vector3(actualCamDir.x, 0, actualCamDir.z).normalize();
                 const sideVec = new THREE.Vector3().crossVectors(forwardVec, camera.up).normalize(); 
                 
                 if (move.forward) camera.position.addScaledVector(forwardVec, currentSpeed);
@@ -406,201 +466,151 @@
                 if (move.left) camera.position.addScaledVector(sideVec, -currentSpeed); 
                 if (move.right) camera.position.addScaledVector(sideVec, currentSpeed);
 
-                // COLLISION DETEKSI KANTONG BATERAI (INTERAKSI DITABRAK)
+                // COLLISION REFILL BATTERY
                 for (let i = batteryPouches.length - 1; i >= 0; i--) {
-                    let pouch = batteryPouches[i];
-                    if (camera.position.distanceTo(pouch.position) < 1.6) {
-                        battery = 100; // Refill Penuh
-                        showSubtitle("[KANTONG LOGISTIK: Baterai Senter Berhasil Diisi Ulang!]", 4000);
-                        scene.remove(pouch);
-                        batteryPouches.splice(i, 1);
+                    if (camera.position.distanceTo(batteryPouches[i].position) < 1.5) {
+                        battery = 100; showSubtitle("[LOGISTIK: Kapasitas Baterai Terisi Penuh!]", 3000);
+                        scene.remove(batteryPouches[i]); batteryPouches.splice(i, 1);
                     }
                 }
 
-                // DETEKSI HELM TRUE ENDING
                 if (!secretItemCollected && camera.position.distanceTo(helmetGroup.position) < 1.8) {
                     secretItemCollected = true; scene.remove(helmetGroup);
-                    showSubtitle("[HELM TAMBANG BERMUTU TINGGI DIDAPATKAN - Oksigen Cadangan Aktif]", 4000);
+                    showSubtitle("[SISTEM: Helm Pengaman Aktif - Oksigen Stabil]", 4000);
                 }
 
-                // Dynamic Flashlight Power
                 if (flashlightOn) {
                     let chaseDist = camera.position.distanceTo(wendigo.position);
-                    if (chaseStarted && chaseDist < 14) {
-                        flashlight.intensity = Math.max(0.5, 1.2 + Math.random() * 3.5); // Gangguan sinyal monster
-                    } else {
-                        flashlight.intensity = 7.5; // Tetap terang benderang
-                    }
-                } else {
-                    flashlight.intensity = 0; // Mati
-                }
+                    flashlight.intensity = (chaseStarted && chaseDist < 14) ? Math.max(0.3, 1.0 + Math.random() * 4.5) : 7.5;
+                } else { flashlight.intensity = 0; }
 
-                // Headbob Physics Engine
+                // HEADBOB ENGINE WITH NATURAL INDEPENDENT AXIS
                 if (isMoving) {
-                    let bobSpeed = isSprinting ? 15 : (isExhausted ? 7 : 10);
-                    let bobAmount = isSprinting ? 0.09 : (isExhausted ? 0.06 : 0.035);
-                    camera.position.y = playerHeight + Math.sin(time * bobSpeed) * bobAmount;
-                } else {
-                    camera.position.y = playerHeight + Math.sin(time * 1.1) * 0.01;
-                }
+                    let bobSpeed = isSprinting ? 15.5 : (isExhausted ? 7 : 10);
+                    camera.position.y = playerHeight + Math.sin(time * bobSpeed) * (isSprinting ? 0.085 : 0.035);
+                } else { camera.position.y = playerHeight + Math.sin(time * 1.2) * 0.008; }
 
                 camera.position.x = Math.max(-tunnelWidth/2 + 0.6, Math.min(tunnelWidth/2 - 0.6, camera.position.x));
                 camera.position.z = Math.min(289, camera.position.z);
 
-                // Milestone Plotting
                 if (camera.position.z < 200 && !milestonePassed.m1) {
-                    milestonePassed.m1 = true;
-                    showSubtitle("* Lorongnya makin gelap gulita... Hati-hati konsumsi bateraimu *", 4000);
+                    milestonePassed.m1 = true; showSubtitle("* Suhu udara menurun tajam, hemat konsumsi bateraimu... *", 4000);
                 }
                 if (camera.position.z < 120 && !milestonePassed.m2) {
-                    milestonePassed.m2 = true;
-                    shadowGlitch.position.z = camera.position.z - 28; shadowGlitch.material.opacity = 0.85;
-                    showSubtitle("Astaga! Tadi itu bayangan apa?!", 3000);
-                    setTimeout(() => { shadowGlitch.material.opacity = 0; }, 350);
+                    milestonePassed.m2 = true; shadowGlitch.position.z = camera.position.z - 28; shadowGlitch.material.opacity = 0.9;
+                    showSubtitle("Suara apa itu tadi di depan?!", 3000); setTimeout(() => { shadowGlitch.material.opacity = 0; }, 320);
                 }
 
-                // TRIGGER CHASE SEQUENCING
-                if (!chaseStarted && !triggerSequenceActive && camera.position.z < 40) {
-                    triggerSequenceActive = true; triggerTimer = 0;
-                }
+                if (!chaseStarted && !triggerSequenceActive && camera.position.z < 40) { triggerSequenceActive = true; triggerTimer = 0; }
 
                 if (triggerSequenceActive && !chaseStarted) {
                     triggerTimer++;
                     if (triggerTimer < 110) {
-                        if (flashlightOn) flashlight.intensity = Math.max(0.5, 1.0 + Math.random()*4.0);
-                        showSubtitle("Tegangan listrik gua drop... Senter darurat gak stabil!", 2000);
+                        if (flashlightOn) flashlight.intensity = Math.max(0.4, 1.0 + Math.random()*4.0);
+                        showSubtitle("Arus generator tidak stabil... Senter terganggu!", 2000);
                     } else if (triggerTimer >= 240 && triggerTimer < 340) {
-                        if (flashlightOn) flashlight.intensity = 0.5;
-                        showSubtitle("!! KRETEEKKK... SKRREEEEAAAGHH!!! *", 3500);
-                        subtitles.style.color = "#ff3333";
-                        wendigo.position.set(camera.position.x, 0, camera.position.z + 22);
-                        wendigoGlow.intensity = 1.5;
+                        if (flashlightOn) flashlight.intensity = 0.4;
+                        showSubtitle("!! KRETEEKKK... SKRREEEEAAAGHH!!! *", 3500); subtitles.style.color = "#ff3333";
+                        wendigo.position.set(camera.position.x, 0, camera.position.z + 22); wendigoGlow.intensity = 2.0;
                     } else if (triggerTimer >= 340) {
-                        triggerSequenceActive = false; chaseStarted = true;
-                        subtitles.style.color = "#ffffff";
-                        showSubtitle("IA MERANGKAK SANGAT CEPAT!! RUN!!!", 4500);
-                        ui.style.opacity = 1;
-                        fearContainer.style.display = 'block'; // FEAR BAR MUNCUL DI LAYAR
-                        monsterSound.play().catch(()=>{});
+                        triggerSequenceActive = false; chaseStarted = true; subtitles.style.color = "#ffffff";
+                        showSubtitle("MAKHLUK ITU SANGAT CEPAT!! LARI SEKARANG!!!", 4500); monsterSound.play().catch(()=>{});
                     }
                 }
 
-                // CHASE & FEAR ENGINE LOGIC DETECTOR
                 if (chaseStarted) {
                     let distance = camera.position.distanceTo(wendigo.position);
-
                     wendigo.lookAt(camera.position.x, wendigo.position.y, camera.position.z);
                     const wendigoDir = new THREE.Vector3().subVectors(camera.position, wendigo.position); wendigoDir.y = 0; wendigoDir.normalize();
-                    
-                    let adaptiveSpeed = camera.position.z < -120 ? 1.25 : 1.0;
-                    wendigo.position.addScaledVector(wendigoDir, wendigoBaseSpeed * adaptiveSpeed);
+                    wendigo.position.addScaledVector(wendigoDir, wendigoBaseSpeed * (camera.position.z < -120 ? 1.28 : 1.0));
 
-                    // UPGRADE LENGKAP: KALKULASI FEAR BAR BERDASARKAN JARAK MONSTER
-                    if (distance < 20) {
-                        // Semakin dekat monster, fear bertambah eksponensial
-                        fear += (20 - distance) * 0.016; 
-                    } else {
-                        fear = Math.max(0, fear - 0.06); // Turun pelan kalau monster menjauh
-                    }
-                    fearBar.style.width = Math.min(100, fear) + "%";
+                    // DYNAMIC FEAR CALCULATIONS
+                    fear += (distance < 20) ? (20 - distance) * 0.018 : -0.07;
+                    fear = Math.max(0, fear); fearBar.style.width = Math.min(100, fear) + "%";
 
-                    // HUD Text Warning
-                    if (distance > 24) {
-                        distanceUI.innerText = "Aman"; distanceUI.style.color = "#33ff33"; bloodOverlay.style.opacity = 0; scene.fog.density = 0.26;
-                    } else if (distance > 10) {
-                        distanceUI.innerText = "MENDEKAT!!"; distanceUI.style.color = "#ffff33"; 
-                        bloodOverlay.style.opacity = (24 - distance) / 24 * 0.55; scene.fog.density = 0.26 + (24 - distance) * 0.007;
-                    } else {
-                        distanceUI.innerText = "DI BELAKANGMU!!!"; distanceUI.style.color = "#ff0000"; 
-                        bloodOverlay.style.opacity = 0.85; scene.fog.density = 0.40;
-                    }
+                    if (distance > 24) { distanceUI.innerText = "Stabil"; distanceUI.style.color = "#33ff33"; bloodOverlay.style.opacity = 0; scene.fog.density = 0.25; }
+                    else if (distance > 10) { distanceUI.innerText = "MENDEKAT!!"; distanceUI.style.color = "#ffff33"; bloodOverlay.style.opacity = (24 - distance) / 24 * 0.6; scene.fog.density = 0.25 + (24 - distance) * 0.008; }
+                    else { distanceUI.innerText = "TEPAT DI BELAKANGMU!!!"; distanceUI.style.color = "#ff0000"; bloodOverlay.style.opacity = 0.88; scene.fog.density = 0.42; }
 
-                    // UPGRADE TRIGGER: ENDING MATI KETAKUTAN (FEAR >= 100)
+                    // FEAR ENDING CONDITION TRIGGER (100% CAP)
                     if (fear >= 100 && !isFearEnding) {
-                        isFearEnding = true;
-                        document.exitPointerLock();
-                        breatheSound.pause();
-                        flashlight.intensity = 0; // Senter langsung jatuh/mati
-                        bloodOverlay.style.background = "#2a004d"; // Efek layar ungu gelap kematian mental
-                        bloodOverlay.style.opacity = 1;
-                        subtitles.style.opacity = 0;
+                        isFearEnding = true; document.exitPointerLock(); breatheSound.pause(); flashlight.intensity = 0;
+                        bloodOverlay.style.background = "#21003d"; bloodOverlay.style.opacity = 1; subtitles.style.opacity = 0;
                         fearEndingUI.style.display = "block";
                     }
 
-                    // BAD ENDING TERCABIK (MONSTER MENYENTUH PLAYER)
                     if (distance < 1.7 && !isGameOver && !isFearEnding) {
-                        isGameOver = true; jumpscareActive = true;
-                        document.exitPointerLock(); subtitles.style.opacity = 0;
-                        breatheSound.pause();
+                        isGameOver = true; jumpscareActive = true; document.exitPointerLock(); subtitles.style.opacity = 0; breatheSound.pause();
                         let faceDir = new THREE.Vector3().subVectors(camera.position, wendigo.position).normalize();
-                        jumpCamPos.copy(wendigo.position); jumpCamPos.y += 2.82; jumpCamPos.addScaledVector(faceDir, 0.82); 
+                        jumpCamPos.copy(wendigo.position); jumpCamPos.y += 2.85; jumpCamPos.addScaledVector(faceDir, 0.8); 
                     }
                 }
 
                 let remaining = Math.max(0, Math.round(camera.position.z + 285));
                 progressUI.innerText = remaining + " meter";
 
-                // EVALUASI ENDING FINISH LINE
+                // FINISH LINE BRANCHING RE-EVALUATION
                 if (camera.position.z <= -285) {
                     document.exitPointerLock(); breatheSound.pause(); ui.style.opacity = 0;
 
                     if (secretItemCollected) {
-                        isTrueEnding = true; trueEndingUI.style.display = 'block'; subtitles.style.opacity = 0;
-                    } else if (isExhausted || stamina < 15) {
-                        isNormalEnding = true; normalEndingSequenceStage = 1; normalEndingTimer = 0;
+                        isSecretEnding = true; secretEndingUI.style.display = 'block'; subtitles.style.opacity = 0;
+                    } else if (isExhausted || stamina < 25) {
+                        // CANONICAL TRUE ENDING CONDITIONS MET (Exhausted/Capek Banget!)
+                        isTrueEnding = true; normalEndingSequenceStage = 1; normalEndingTimer = 0;
                     } else {
                         isGameWin = true; gameWinUI.style.display = 'block'; subtitles.style.opacity = 0;
                     }
                 }
             } 
             
-            // CUTSCENE EASTER EGG NORMAL ENDING
-            else if (isNormalEnding) {
+            // CANONICAL TRUE ENDING SCENARIO ("Jancuk Capek Banget")
+            else if (isTrueEnding) {
                 normalEndingTimer++;
                 if (normalEndingSequenceStage === 1) {
-                    camera.position.y = Math.max(0.4, camera.position.y - 0.03);
-                    camera.rotation.z = Math.min(0.4, camera.rotation.z + 0.01); 
-                    if(flashlightOn) flashlight.intensity = 0.4;
+                    camera.position.y = Math.max(0.35, camera.position.y - 0.035);
+                    camera.rotation.z = Math.min(0.45, camera.rotation.z + 0.008); 
+                    if(flashlightOn) flashlight.intensity = 0.3;
                     
                     if (!normalEndingDialogueShown) {
-                        showSubtitle("HUHUHU JANCU gua capek banget anjing... Monster sialan b******...", 4000);
+                        showSubtitle("HUHUHU JANCU gua capek banget anjing... Goa b******, monster sialan...", 4500);
                         normalEndingDialogueShown = true;
                     }
-                    if (normalEndingTimer > 200) { normalEndingSequenceStage = 2; normalEndingTimer = 0; }
+                    if (normalEndingTimer > 220) { normalEndingSequenceStage = 2; normalEndingTimer = 0; }
                 } 
                 else if (normalEndingSequenceStage === 2) {
                     if (normalEndingTimer === 1) {
-                        showSubtitle("* Suara berat merangkak lambat mendekat tepat dari belakangmu... *", 4500);
+                        showSubtitle("* Sesuatu merangkak lambat dari kegelapan tepat di belakangmu... *", 4500);
                         subtitles.style.color = "#ff0000";
                     }
                     let currentOpacity = parseFloat(bloodOverlay.style.opacity || 0);
-                    bloodOverlay.style.opacity = Math.min(0.9, currentOpacity + 0.005);
+                    bloodOverlay.style.opacity = Math.min(0.92, currentOpacity + 0.006);
                     
-                    wendigo.position.set(camera.position.x, 0, camera.position.z - 3); wendigo.lookAt(camera.position);
+                    wendigo.position.set(camera.position.x, 0, camera.position.z - 2.8); wendigo.lookAt(camera.position);
                     
                     if (normalEndingTimer > 250) {
                         bloodOverlay.style.background = "#000000"; bloodOverlay.style.opacity = 1; subtitles.style.opacity = 0;
-                        normalEndUI.style.display = "block";
+                        trueEndingUI.style.display = "block";
                     }
                 }
             }
             
-            // JUMPSCARE ENGINE BAD ENDING
+            // DAMAGE SCREEN SHAKE JUMPSCARE ENGINE
             else if (isGameOver && jumpscareActive) {
                 deathSequenceTimer++;
                 camera.position.copy(jumpCamPos); camera.rotation.set(0, 0, 0); 
-                camera.lookAt(wendigo.position.x, wendigo.position.y + 2.82, wendigo.position.z);
-                camera.fov = 26; camera.updateProjectionMatrix();
+                camera.lookAt(wendigo.position.x, wendigo.position.y + 2.85, wendigo.position.z);
+                camera.fov = 24; camera.updateProjectionMatrix();
 
                 const canvasElement = renderer.domElement;
                 if (deathSequenceTimer < jumpscareDuration) {
-                    let shakeX = (Math.random() - 0.5) * 75; let shakeY = (Math.random() - 0.5) * 75;
-                    canvasElement.style.transform = `translate(${shakeX}px, ${shakeY}px) scale(1.35)`;
-                    wendigoGlow.intensity = 45 + Math.random() * 20; flashlight.intensity = 0; 
-                    bloodOverlay.style.background = Math.random() > 0.4 ? "rgba(230, 0, 0, 0.99)" : "rgba(0, 0, 0, 1.0)";
+                    let shakeX = (Math.random() - 0.5) * 85; let shakeY = (Math.random() - 0.5) * 85;
+                    canvasElement.style.transform = `translate(${shakeX}px, ${shakeY}px) scale(1.4)`;
+                    wendigoGlow.intensity = 55 + Math.random() * 25; flashlight.intensity = 0; 
+                    bloodOverlay.style.background = Math.random() > 0.35 ? "rgba(240, 0, 0, 0.99)" : "rgba(0, 0, 0, 1.0)";
                     bloodOverlay.style.opacity = 1;
                 } else {
-                    canvasElement.style.transform = 'none'; bloodOverlay.style.background = "rgba(0, 0, 0, 0.98)";
+                    canvasElement.style.transform = 'none'; bloodOverlay.style.background = "rgba(0, 0, 0, 0.99)";
                     gameOverUI.style.display = 'block'; jumpscareActive = false;
                 }
             }
