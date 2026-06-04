@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TEROR TAMBANG: REAL JUMPSCARE</title>
+    <title>TEROR TAMBANG: FITUR LARI</title>
     <style>
         body {
             margin: 0;
@@ -74,11 +74,13 @@
     <div id="ui">
         <div>Radar Makhluk: <span id="distance">Mencari Sinyal...</span></div>
         <div>Jalan Keluar Tambang: <span id="progress">360m</span></div>
+        <div style="font-size: 14px; color: #aaa; margin-top: 5px;">Kontrol: WASD + Hold SHIFT untuk Lari</div>
     </div>
 
     <div id="instructions">
         <h1 style="color: #8b0000; letter-spacing: 3px;">DEEP MINING SHAFT #04</h1>
         <p>Lorong sempit rawan longsor. Sesuatu yang lapar mengejarmu dari belakang.</p>
+        <p style="color: #aaa; font-size: 14px; margin: 15px 0;">Gunakan <b>WASD</b> untuk bergerak, <b>MOUSE</b> untuk melihat, dan tahan <b>SHIFT</b> untuk LARI!</p>
         <p style="font-weight: bold; color: #ff3333; margin-top: 20px;">[ KLIK UNTUK MASUK KE LORONG ]</p>
     </div>
 
@@ -130,8 +132,11 @@
         const tunnelWidth = 6; const tunnelHeight = 4.5; const tunnelLength = 400;
         const playerHeight = 1.8;
         camera.position.set(0, playerHeight, 185);
-        const playerSpeed = 0.15;
-        const move = { forward: false, backward: false, left: false, right: false };
+        
+        // SISTEM KECEPATAN BARU (Jalan vs Lari)
+        const walkSpeed = 0.13;
+        const runSpeed = 0.24;
+        const move = { forward: false, backward: false, left: false, right: false, sprint: false };
 
         // --- KONTROL ---
         const instructions = document.getElementById('instructions');
@@ -158,6 +163,7 @@
             if (e.key === 's' || e.key === 'ArrowDown') move.backward = isDown;
             if (e.key === 'a' || e.key === 'ArrowLeft') move.left = isDown;
             if (e.key === 'd' || e.key === 'ArrowRight') move.right = isDown;
+            if (e.key === 'Shift') move.sprint = isDown; // Deteksi Tombol Shift
         };
         document.addEventListener('keydown', (e) => handleKey(e, true));
         document.addEventListener('keyup', (e) => handleKey(e, false));
@@ -197,7 +203,6 @@
         const torso = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.05, 2.5), bodyMat); torso.position.y = 1.6; wendigo.add(torso);
         const head = new THREE.Mesh(new THREE.SphereGeometry(0.24, 8, 8), bodyMat); head.position.y = 2.9; wendigo.add(head);
 
-        // RAHANG MENGANGA HITAM ROBEK (Mouth Jaw)
         const jawGeo = new THREE.ConeGeometry(0.16, 0.4, 4);
         const jawMat = new THREE.MeshBasicMaterial({ color: 0x000000 });
         const jaw = new THREE.Mesh(jawGeo, jawMat); jaw.position.set(0, 2.62, 0.05); jaw.rotation.x = Math.PI; wendigo.add(jaw);
@@ -217,7 +222,9 @@
         const wendigoGlow = new THREE.PointLight(0xff0000, 1.8, 8); wendigoGlow.position.y = 2; wendigo.add(wendigoGlow);
 
         wendigo.position.set(0, 0, 196); scene.add(wendigo);
-        const wendigoBaseSpeed = 0.147;
+        
+        // Sedikit menaikkan kecerdasan speed wendigo agar seimbang dengan fitur lari player
+        const wendigoBaseSpeed = 0.152;
 
         // --- GAME SYSTEM DATA ---
         const distanceUI = document.getElementById('distance');
@@ -227,15 +234,14 @@
 
         let jumpscareActive = false;
         let deathSequenceTimer = 0;
-        const jumpscareDuration = 70; // Durasi getar (~1.2 detik)
-        let jumpCamPos = new THREE.Vector3(); // Menyimpan titik kunci posisi jumpscare
+        const jumpscareDuration = 70;
+        let jumpCamPos = new THREE.Vector3();
 
         function animate() {
             requestAnimationFrame(animate);
             const time = clock.getElapsedTime();
 
             if (gameStarted && !isGameOver && !isGameWin) {
-                // Senter & Pergerakan normal
                 flashlight.position.copy(camera.position);
                 const dir = new THREE.Vector3();
                 camera.getWorldDirection(dir);
@@ -243,23 +249,33 @@
 
                 const distance = camera.position.distanceTo(wendigo.position);
 
-                // Gangguan Senter Kedip
                 if (distance < 16 && Math.random() < (16 - distance) * 0.06) {
                     flashlight.intensity = 0.05;
                 } else {
                     flashlight.intensity = 2.5 + Math.sin(time * 2) * 0.1;
                 }
 
+                // TENTUKAN SPEED BERDASARKAN SHIFT KEY
+                let currentSpeed = move.sprint ? runSpeed : walkSpeed;
+
                 const forwardVec = new THREE.Vector3(dir.x, 0, dir.z).normalize();
                 const sideVec = new THREE.Vector3().crossVectors(camera.up, forwardVec).normalize();
                 let isMoving = false;
-                if (move.forward) { camera.position.addScaledVector(forwardVec, playerSpeed); isMoving = true; }
-                if (move.backward) { camera.position.addScaledVector(forwardVec, -playerSpeed); isMoving = true; }
-                if (move.left) { camera.position.addScaledVector(sideVec, playerSpeed); isMoving = true; }
-                if (move.right) { camera.position.addScaledVector(sideVec, -playerSpeed); isMoving = true; }
+                if (move.forward) { camera.position.addScaledVector(forwardVec, currentSpeed); isMoving = true; }
+                if (move.backward) { camera.position.addScaledVector(forwardVec, -currentSpeed); isMoving = true; }
+                if (move.left) { camera.position.addScaledVector(sideVec, currentSpeed); isMoving = true; }
+                if (move.right) { camera.position.addScaledVector(sideVec, -currentSpeed); isMoving = true; }
 
+                // EFEK BOBBING DINAMIS (Makin cepat kalau lari)
                 if (isMoving) {
-                    camera.position.y = playerHeight + Math.sin(time * 12) * 0.06;
+                    let bobSpeed = move.sprint ? 18 : 12;  // Ayunan kaki lebih cepat saat lari
+                    let bobAmount = move.sprint ? 0.12 : 0.06; // Ayunan naik-turun lebih ekstrem saat lari
+                    camera.position.y = playerHeight + Math.sin(time * bobSpeed) * bobAmount;
+                    
+                    // Efek senter ikut goyang kiri-kanan karena getaran berlari
+                    if (move.sprint) {
+                        flashlight.target.position.x += Math.cos(time * 18) * 0.05;
+                    }
                 } else {
                     camera.position.y = playerHeight + Math.sin(time * 1.5) * 0.01;
                 }
@@ -267,15 +283,16 @@
                 camera.position.x = Math.max(-tunnelWidth/2 + 0.6, Math.min(tunnelWidth/2 - 0.6, camera.position.x));
                 camera.position.z = Math.min(190, camera.position.z);
 
-                // AI Menguber Pemain
                 wendigo.lookAt(camera.position.x, wendigo.position.y, camera.position.z);
                 const wendigoDir = new THREE.Vector3().subVectors(camera.position, wendigo.position);
                 wendigoDir.y = 0; wendigoDir.normalize();
-                wendigo.position.addScaledVector(wendigoDir, wendigoBaseSpeed * (camera.position.z < 0 ? 1.05 : 1.0));
+                
+                // Jika pemain makin jauh ke depan (mendekati finish), Wendigo akan marah dan lari ekstra kencang!
+                let wendigoSpeedMultiplier = camera.position.z < 0 ? 1.25 : 1.0;
+                wendigo.position.addScaledVector(wendigoDir, wendigoBaseSpeed * wendigoSpeedMultiplier);
                 
                 armL.rotation.x = 0.4 + Math.sin(time * 25) * 0.15; armR.rotation.x = 0.4 + Math.cos(time * 25) * 0.15;
 
-                // UI Status Jarak
                 if (distance > 20) {
                     distanceUI.innerText = "Aman (Jauh)"; distanceUI.style.color = "#33ff33"; bloodOverlay.style.opacity = 0;
                 } else if (distance > 8) {
@@ -286,17 +303,14 @@
 
                 progressUI.innerText = Math.max(0, Math.round(camera.position.z - (-185))) + " meter";
 
-                // KONDISI TERTANGKAP (TRIGGER JUMPSCARE INSTAN)
                 if (distance < 1.8) {
                     isGameOver = true;
                     jumpscareActive = true;
                     document.exitPointerLock();
 
-                    // HITUNG POSISI INSTAN DI DEPAN MUKA WENDIGO
                     let faceDir = new THREE.Vector3().subVectors(camera.position, wendigo.position);
                     faceDir.y = 0; faceDir.normalize();
                     
-                    // Kunci koordinat tepat 0.9 unit di depan muka monster, pas tinggi mata
                     jumpCamPos.copy(wendigo.position);
                     jumpCamPos.y += 2.8; 
                     jumpCamPos.addScaledVector(faceDir, 0.9); 
@@ -309,36 +323,28 @@
                 }
             } 
             
-            // --- LOGIKA URUTAN JUMPSCARE BRUTAL TERBARU ---
             else if (isGameOver && jumpscareActive) {
                 deathSequenceTimer++;
 
-                // 1. IKAT POSISI KAMERA SECARA PAKSA DI DEPAN MATANYA
                 camera.position.copy(jumpCamPos);
-                camera.rotation.set(0, 0, 0); // Reset rotasi manual mouse sebelumnya
+                camera.rotation.set(0, 0, 0); 
                 camera.lookAt(wendigo.position.x, wendigo.position.y + 2.8, wendigo.position.z);
 
-                // 2. ZOOM SINEMATIK EKSTREM (Sempitkan FOV Kamera)
                 camera.fov = 32;
                 camera.updateProjectionMatrix();
 
-                // 3. EFEK GUNCANGAN CANVAS WEB (SCREEN SHATTER EFFECT)
                 const canvasElement = renderer.domElement;
                 if (deathSequenceTimer < jumpscareDuration) {
-                    // Tarik koordinat elemen HTML secara kasar di layar monitor
                     let shakeX = (Math.random() - 0.5) * 50;
                     let shakeY = (Math.random() - 0.5) * 50;
                     canvasElement.style.transform = `translate(${shakeX}px, ${shakeY}px) scale(1.2)`;
                     
-                    // Nyala lampu merah berkedip kencang di wajah monster
                     wendigoGlow.intensity = 30 + Math.random() * 20;
-                    flashlight.intensity = 0; // Matikan senter pemain total
+                    flashlight.intensity = 0; 
 
-                    // Kilatan Darah Merah Pekat di Layar
                     bloodOverlay.style.background = Math.random() > 0.4 ? "rgba(220, 0, 0, 0.98)" : "rgba(10, 0, 0, 0.99)";
                     bloodOverlay.style.opacity = 1;
                 } else {
-                    // Jumpscare selesai, kembalikan posisi layar, munculkan teks mati
                     canvasElement.style.transform = 'none';
                     bloodOverlay.style.background = "rgba(100, 0, 0, 0.95)";
                     gameOverUI.style.display = 'block';
