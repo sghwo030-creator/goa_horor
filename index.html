@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Saturasi Teror: Jumpscare Brutal</title>
+    <title>TEROR TAMBANG: REAL JUMPSCARE</title>
     <style>
         body {
             margin: 0;
@@ -14,6 +14,7 @@
         #canvas-container {
             width: 100vw;
             height: 100vh;
+            transition: filter 0.1s;
         }
         #ui {
             position: absolute;
@@ -32,7 +33,6 @@
             pointer-events: none;
             z-index: 5;
             opacity: 0;
-            transition: opacity 0.3s;
         }
         #instructions {
             position: absolute;
@@ -51,7 +51,8 @@
             transform: translate(-50%, -50%);
             color: #ff0000; text-align: center;
             font-size: 50px; font-weight: bold;
-            text-shadow: 0 0 20px #ff0000; z-index: 30;
+            text-shadow: 0 0 30px #ff0000; z-index: 30;
+            letter-spacing: 5px;
         }
         #game-win {
             display: none;
@@ -71,19 +72,19 @@
     <div id="blood-overlay"></div>
     
     <div id="ui">
-        <div>Anomali Goa: <span id="distance">Mendeteksi...</span></div>
-        <div>Sisa Terowongan: <span id="progress">360m</span></div>
+        <div>Radar Makhluk: <span id="distance">Mencari Sinyal...</span></div>
+        <div>Jalan Keluar Tambang: <span id="progress">360m</span></div>
     </div>
 
     <div id="instructions">
         <h1 style="color: #8b0000; letter-spacing: 3px;">DEEP MINING SHAFT #04</h1>
-        <p>Struktur goa tidak stabil. Sesuatu mengejarmu dari belakang.</p>
-        <p style="font-weight: bold; color: #ff3333; margin-top: 20px; animation: blink 1.5s infinite;">[ KLIK UNTUK MASUK KE KEGELAPAN ]</p>
+        <p>Lorong sempit rawan longsor. Sesuatu yang lapar mengejarmu dari belakang.</p>
+        <p style="font-weight: bold; color: #ff3333; margin-top: 20px;">[ KLIK UNTUK MASUK KE LORONG ]</p>
     </div>
 
     <div id="game-over">
-        TERMANSA OLEH WENDIGO!
-        <p style="font-size: 18px; color: #aaa; margin-top: 20px; font-weight: normal;">Jiwa kamu terperangkap di tambang ini selamanya.<br>Refresh (F5) untuk mencoba lagi.</p>
+        MATI DIMAKAN WENDIGO!
+        <p style="font-size: 18px; color: #aaa; margin-top: 20px; font-weight: normal; letter-spacing: 0px;">Tubuhmu hancur di dalam kegelapan goa tambang.<br>Tekan <b style="color: #fff;">F5 (Refresh)</b> untuk mencoba lagi.</p>
     </div>
 
     <div id="game-win">
@@ -92,19 +93,16 @@
     </div>
 
     <script>
-        // --- PROSEDURAL TEKSTUR BATU ---
+        // --- TEKSTUR BATU PROSEDURAL ---
         function generateNoiseTexture() {
             const canvas = document.createElement('canvas');
             canvas.width = 512; canvas.height = 512;
             const ctx = canvas.getContext('2d');
             ctx.fillStyle = '#222222'; ctx.fillRect(0, 0, 512, 512);
-            
             for (let i = 0; i < 30000; i++) {
-                let x = Math.random() * 512;
-                let y = Math.random() * 512;
+                let x = Math.random() * 512; let y = Math.random() * 512;
                 let shade = Math.floor(Math.random() * 80);
-                ctx.fillStyle = `rgb(${shade},${shade},${shade})`;
-                ctx.fillRect(x, y, 2, 2);
+                ctx.fillStyle = `rgb(${shade},${shade},${shade})`; ctx.fillRect(x, y, 2, 2);
             }
             const texture = new THREE.CanvasTexture(canvas);
             texture.wrapS = THREE.RepeatWrapping; texture.wrapT = THREE.RepeatWrapping;
@@ -114,7 +112,7 @@
 
         const bumpTex = generateNoiseTexture();
 
-        // --- SETUP SCENE & GRAPHICS ---
+        // --- SETUP AMBIENT ---
         const container = document.getElementById('canvas-container');
         const bloodOverlay = document.getElementById('blood-overlay');
         const scene = new THREE.Scene();
@@ -129,16 +127,13 @@
         let isGameOver = false, isGameWin = false, gameStarted = false;
         let clock = new THREE.Clock();
 
-        const tunnelWidth = 6;
-        const tunnelHeight = 4.5;
-        const tunnelLength = 400;
-
-        const playerHeight = 1.8; // Konstanta tinggi mata manusia
+        const tunnelWidth = 6; const tunnelHeight = 4.5; const tunnelLength = 400;
+        const playerHeight = 1.8;
         camera.position.set(0, playerHeight, 185);
         const playerSpeed = 0.15;
         const move = { forward: false, backward: false, left: false, right: false };
 
-        // --- SISTEM KONTROL ---
+        // --- KONTROL ---
         const instructions = document.getElementById('instructions');
         instructions.addEventListener('click', () => { container.requestPointerLock(); });
 
@@ -167,25 +162,15 @@
         document.addEventListener('keydown', (e) => handleKey(e, true));
         document.addEventListener('keyup', (e) => handleKey(e, false));
 
-        // --- ARSITEKTUR LORONG TAMBANG ---
+        // --- MAP GENERATION ---
         const rockMaterial = new THREE.MeshStandardMaterial({
             color: 0x1c1a18, bumpMap: bumpTex, bumpScale: 0.05, roughness: 0.95, metalness: 0.1
         });
 
-        const floorGeo = new THREE.PlaneGeometry(tunnelWidth, tunnelLength);
-        const floor = new THREE.Mesh(floorGeo, rockMaterial);
-        floor.rotation.x = -Math.PI / 2; scene.add(floor);
-
-        const roofGeo = new THREE.PlaneGeometry(tunnelWidth, tunnelLength);
-        const roof = new THREE.Mesh(roofGeo, rockMaterial);
-        roof.rotation.x = Math.PI / 2; roof.position.y = tunnelHeight; scene.add(roof);
-
-        const wallGeo = new THREE.PlaneGeometry(tunnelLength, tunnelHeight);
-        const leftWall = new THREE.Mesh(wallGeo, rockMaterial);
-        leftWall.rotation.y = Math.PI / 2; leftWall.position.set(-tunnelWidth / 2, tunnelHeight / 2, 0); scene.add(leftWall);
-
-        const rightWall = new THREE.Mesh(wallGeo, rockMaterial);
-        rightWall.rotation.y = -Math.PI / 2; rightWall.position.set(tunnelWidth / 2, tunnelHeight / 2, 0); scene.add(rightWall);
+        const floor = new THREE.Mesh(new THREE.PlaneGeometry(tunnelWidth, tunnelLength), rockMaterial); floor.rotation.x = -Math.PI / 2; scene.add(floor);
+        const roof = new THREE.Mesh(new THREE.PlaneGeometry(tunnelWidth, tunnelLength), rockMaterial); roof.rotation.x = Math.PI / 2; roof.position.y = tunnelHeight; scene.add(roof);
+        const leftWall = new THREE.Mesh(new THREE.PlaneGeometry(tunnelLength, tunnelHeight), rockMaterial); leftWall.rotation.y = Math.PI / 2; leftWall.position.set(-tunnelWidth / 2, tunnelHeight / 2, 0); scene.add(leftWall);
+        const rightWall = new THREE.Mesh(new THREE.PlaneGeometry(tunnelLength, tunnelHeight), rockMaterial); rightWall.rotation.y = -Math.PI / 2; rightWall.position.set(tunnelWidth / 2, tunnelHeight / 2, 0); scene.add(rightWall);
 
         const woodMat = new THREE.MeshStandardMaterial({ color: 0x21140e, roughness: 0.9 });
         const ironMat = new THREE.MeshStandardMaterial({ color: 0x3a3a3a, roughness: 0.5, metalness: 0.8 });
@@ -195,26 +180,27 @@
             const postR = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.12, tunnelHeight), woodMat); postR.position.set(tunnelWidth/2 - 0.15, tunnelHeight/2, z); scene.add(postR);
             const beamT = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, tunnelWidth), woodMat); beamT.rotation.z = Math.PI / 2; beamT.position.set(0, tunnelHeight - 0.1, z); scene.add(beamT);
             const tie = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.05, 0.2), woodMat); tie.position.set(0, 0.02, z); scene.add(tie);
-            const tie2 = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.05, 0.2), woodMat); tie2.position.set(0, 0.02, z + 5); scene.add(tie2);
         }
 
-        const railGeo = new THREE.BoxGeometry(0.05, 0.06, tunnelLength);
-        const railL = new THREE.Mesh(railGeo, ironMat); railL.position.set(-0.8, 0.05, 0); scene.add(railL);
-        const railR = new THREE.Mesh(railGeo, ironMat); railR.position.set(0.8, 0.05, 0); scene.add(railR);
+        const railL = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.06, tunnelLength), ironMat); railL.position.set(-0.8, 0.05, 0); scene.add(railL);
+        const railR = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.06, tunnelLength), ironMat); railR.position.set(0.8, 0.05, 0); scene.add(railR);
 
-        // --- SISTEM COHAYA: SENTER PEMAIN ---
-        const flashlight = new THREE.SpotLight(0xfffbe6, 3, 28, Math.PI / 5.5, 0.5, 1.2);
-        scene.add(flashlight);
+        // --- LIGHTS ---
+        const flashlight = new THREE.SpotLight(0xfffbe6, 3, 28, Math.PI / 5.5, 0.5, 1.2); scene.add(flashlight);
         flashlight.target = new THREE.Object3D(); scene.add(flashlight.target);
-
         const ambient = new THREE.AmbientLight(0x020203, 0.2); scene.add(ambient);
 
-        // --- MUSUH TINGKAT TINGGI: WENDIGO ---
+        // --- MODEL MONSTER WENDIGO ---
         const wendigo = new THREE.Group();
         const bodyMat = new THREE.MeshStandardMaterial({ color: 0x050505, roughness: 1.0 });
 
         const torso = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.05, 2.5), bodyMat); torso.position.y = 1.6; wendigo.add(torso);
-        const head = new THREE.Mesh(new THREE.SphereGeometry(0.22, 8, 8), bodyMat); head.position.y = 2.9; wendigo.add(head);
+        const head = new THREE.Mesh(new THREE.SphereGeometry(0.24, 8, 8), bodyMat); head.position.y = 2.9; wendigo.add(head);
+
+        // RAHANG MENGANGA HITAM ROBEK (Mouth Jaw)
+        const jawGeo = new THREE.ConeGeometry(0.16, 0.4, 4);
+        const jawMat = new THREE.MeshBasicMaterial({ color: 0x000000 });
+        const jaw = new THREE.Mesh(jawGeo, jawMat); jaw.position.set(0, 2.62, 0.05); jaw.rotation.x = Math.PI; wendigo.add(jaw);
 
         const antlerMat = new THREE.MeshBasicMaterial({ color: 0x010101 });
         for(let i = 0; i < 4; i++) {
@@ -222,34 +208,34 @@
         }
 
         const eyeMat = new THREE.MeshBasicMaterial({ color: 0xff0000 });
-        const eyeL = new THREE.Mesh(new THREE.SphereGeometry(0.04, 6, 6), eyeMat); eyeL.position.set(-0.09, 2.9, -0.18);
-        const eyeR = new THREE.Mesh(new THREE.SphereGeometry(0.04, 6, 6), eyeMat); eyeR.position.set(0.09, 2.9, -0.18); wendigo.add(eyeL, eyeR);
+        const eyeL = new THREE.Mesh(new THREE.SphereGeometry(0.05, 6, 6), eyeMat); eyeL.position.set(-0.09, 2.9, 0.18);
+        const eyeR = new THREE.Mesh(new THREE.SphereGeometry(0.05, 6, 6), eyeMat); eyeR.position.set(0.09, 2.9, 0.18); wendigo.add(eyeL, eyeR);
 
-        const armL = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.02, 2), bodyMat); armL.position.set(-0.25, 1.8, -0.2); armL.rotation.z = 0.2; armL.rotation.x = -0.4; wendigo.add(armL);
-        const armR = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.02, 2), bodyMat); armR.position.set(0.25, 1.8, -0.2); armR.rotation.z = -0.2; armR.rotation.x = -0.4; wendigo.add(armR);
+        const armL = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.02, 2.2), bodyMat); armL.position.set(-0.25, 1.8, 0.2); armL.rotation.z = 0.2; armL.rotation.x = 0.4; wendigo.add(armL);
+        const armR = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.02, 2.2), bodyMat); armR.position.set(0.25, 1.8, 0.2); armR.rotation.z = -0.2; armR.rotation.x = 0.4; wendigo.add(armR);
 
         const wendigoGlow = new THREE.PointLight(0xff0000, 1.8, 8); wendigoGlow.position.y = 2; wendigo.add(wendigoGlow);
 
         wendigo.position.set(0, 0, 196); scene.add(wendigo);
-        const wendigoBaseSpeed = 0.146;
+        const wendigoBaseSpeed = 0.147;
 
-        // --- ANIMASI GAME & LOGIKA ---
+        // --- GAME SYSTEM DATA ---
         const distanceUI = document.getElementById('distance');
         const progressUI = document.getElementById('progress');
         const gameOverUI = document.getElementById('game-over');
         const gameWinUI = document.getElementById('game-win');
 
-        // NEW LOGIC: Death Sequence variables
         let jumpscareActive = false;
         let deathSequenceTimer = 0;
-        const jumpscareDuration = 60; // frames (~1 detik)
+        const jumpscareDuration = 70; // Durasi getar (~1.2 detik)
+        let jumpCamPos = new THREE.Vector3(); // Menyimpan titik kunci posisi jumpscare
 
         function animate() {
             requestAnimationFrame(animate);
             const time = clock.getElapsedTime();
 
             if (gameStarted && !isGameOver && !isGameWin) {
-                // ... (Update Senter, AI Wendigo, Pergerakan Pemain, Tabrakan Dinding, HUD)
+                // Senter & Pergerakan normal
                 flashlight.position.copy(camera.position);
                 const dir = new THREE.Vector3();
                 camera.getWorldDirection(dir);
@@ -257,8 +243,9 @@
 
                 const distance = camera.position.distanceTo(wendigo.position);
 
+                // Gangguan Senter Kedip
                 if (distance < 16 && Math.random() < (16 - distance) * 0.06) {
-                    flashlight.intensity = 0.1;
+                    flashlight.intensity = 0.05;
                 } else {
                     flashlight.intensity = 2.5 + Math.sin(time * 2) * 0.1;
                 }
@@ -280,27 +267,39 @@
                 camera.position.x = Math.max(-tunnelWidth/2 + 0.6, Math.min(tunnelWidth/2 - 0.6, camera.position.x));
                 camera.position.z = Math.min(190, camera.position.z);
 
+                // AI Menguber Pemain
                 wendigo.lookAt(camera.position.x, wendigo.position.y, camera.position.z);
                 const wendigoDir = new THREE.Vector3().subVectors(camera.position, wendigo.position);
                 wendigoDir.y = 0; wendigoDir.normalize();
-                wendigo.position.addScaledVector(wendigoDir, wendigoBaseSpeed * (camera.position.z < 0 ? 1.04 : 1.0));
-                armL.rotation.x = -0.4 + Math.sin(time * 30) * 0.1; armR.rotation.x = -0.4 + Math.cos(time * 30) * 0.1;
+                wendigo.position.addScaledVector(wendigoDir, wendigoBaseSpeed * (camera.position.z < 0 ? 1.05 : 1.0));
+                
+                armL.rotation.x = 0.4 + Math.sin(time * 25) * 0.15; armR.rotation.x = 0.4 + Math.cos(time * 25) * 0.15;
 
+                // UI Status Jarak
                 if (distance > 20) {
-                    distanceUI.innerText = "Stabil (Jauh)"; distanceUI.style.color = "#33ff33"; bloodOverlay.style.opacity = 0;
+                    distanceUI.innerText = "Aman (Jauh)"; distanceUI.style.color = "#33ff33"; bloodOverlay.style.opacity = 0;
                 } else if (distance > 8) {
-                    distanceUI.innerText = "MENDEKAT!"; distanceUI.style.color = "#ffff33"; bloodOverlay.style.opacity = (20 - distance) / 20;
+                    distanceUI.innerText = "MENDEKAT SECARA CEPAT!"; distanceUI.style.color = "#ffff33"; bloodOverlay.style.opacity = (20 - distance) / 20;
                 } else {
-                    distanceUI.innerText = "DI BELAKANGMU!!"; distanceUI.style.color = "#ff0000"; bloodOverlay.style.opacity = 0.8;
+                    distanceUI.innerText = "DIA TEPAT DI BELAKANGMU!!!"; distanceUI.style.color = "#ff0000"; bloodOverlay.style.opacity = 0.8;
                 }
 
                 progressUI.innerText = Math.max(0, Math.round(camera.position.z - (-185))) + " meter";
 
-                // KONDISI GAME OVER: MAKAN OLEH WENDIGO (JUMPSCARE DIMULAI)
-                if (distance < 1.7) {
+                // KONDISI TERTANGKAP (TRIGGER JUMPSCARE INSTAN)
+                if (distance < 1.8) {
                     isGameOver = true;
+                    jumpscareActive = true;
                     document.exitPointerLock();
-                    jumpscareActive = true; // AKTIFKAN URUTAN JUMPSCARE
+
+                    // HITUNG POSISI INSTAN DI DEPAN MUKA WENDIGO
+                    let faceDir = new THREE.Vector3().subVectors(camera.position, wendigo.position);
+                    faceDir.y = 0; faceDir.normalize();
+                    
+                    // Kunci koordinat tepat 0.9 unit di depan muka monster, pas tinggi mata
+                    jumpCamPos.copy(wendigo.position);
+                    jumpCamPos.y += 2.8; 
+                    jumpCamPos.addScaledVector(faceDir, 0.9); 
                 }
 
                 if (camera.position.z <= -185) {
@@ -310,36 +309,40 @@
                 }
             } 
             
-            // --- URUTAN JUMPSCARE BRUTAL (Triggered when isGameOver && jumpscareActive) ---
-            else if (isGameOver && jumpscareActive && !isGameWin) {
+            // --- LOGIKA URUTAN JUMPSCARE BRUTAL TERBARU ---
+            else if (isGameOver && jumpscareActive) {
                 deathSequenceTimer++;
 
-                // FASA 1: SNAP KAMERA INSTAN (Hanya berjalan sekali pada frame pertama kematian)
-                if (deathSequenceTimer === 1) {
-                    // Paksa kamera snap langsung di depan wajah Wendigo
-                    camera.position.set(wendigo.position.x, wendigo.position.y + 2.6, wendigo.position.z + 1.1);
-                    // Paksa kamera melihat langsung ke matanya
-                    camera.lookAt(wendigo.position.x, wendigo.position.y + 2.7, wendigo.position.z);
-                    // Paksa overlay darah langsung penuh
-                    bloodOverlay.style.background = "rgba(180, 0, 0, 0.98)";
-                    bloodOverlay.style.opacity = 1;
-                }
-                
-                // FASA 2: GETARAN KAMERA VIOLENT (Berjalan selama durasi jumpscare setelah snap)
-                if (deathSequenceTimer > 1 && deathSequenceTimer < jumpscareDuration) {
-                    // Jangkauan shake yang jauh lebih besar
-                    const shakeRange = 0.25; 
-                    camera.position.x += (Math.random() - 0.5) * shakeRange;
-                    camera.position.y += (Math.random() - 0.5) * shakeRange;
-                    camera.position.z += (Math.random() - 0.5) * shakeRange;
-                }
+                // 1. IKAT POSISI KAMERA SECARA PAKSA DI DEPAN MATANYA
+                camera.position.copy(jumpCamPos);
+                camera.rotation.set(0, 0, 0); // Reset rotasi manual mouse sebelumnya
+                camera.lookAt(wendigo.position.x, wendigo.position.y + 2.8, wendigo.position.z);
 
-                // FASA 3: TAMPILKAN GAME OVER UI (Setelah durasi getaran selesai)
-                if (deathSequenceTimer >= jumpscareDuration) {
+                // 2. ZOOM SINEMATIK EKSTREM (Sempitkan FOV Kamera)
+                camera.fov = 32;
+                camera.updateProjectionMatrix();
+
+                // 3. EFEK GUNCANGAN CANVAS WEB (SCREEN SHATTER EFFECT)
+                const canvasElement = renderer.domElement;
+                if (deathSequenceTimer < jumpscareDuration) {
+                    // Tarik koordinat elemen HTML secara kasar di layar monitor
+                    let shakeX = (Math.random() - 0.5) * 50;
+                    let shakeY = (Math.random() - 0.5) * 50;
+                    canvasElement.style.transform = `translate(${shakeX}px, ${shakeY}px) scale(1.2)`;
+                    
+                    // Nyala lampu merah berkedip kencang di wajah monster
+                    wendigoGlow.intensity = 30 + Math.random() * 20;
+                    flashlight.intensity = 0; // Matikan senter pemain total
+
+                    // Kilatan Darah Merah Pekat di Layar
+                    bloodOverlay.style.background = Math.random() > 0.4 ? "rgba(220, 0, 0, 0.98)" : "rgba(10, 0, 0, 0.99)";
+                    bloodOverlay.style.opacity = 1;
+                } else {
+                    // Jumpscare selesai, kembalikan posisi layar, munculkan teks mati
+                    canvasElement.style.transform = 'none';
+                    bloodOverlay.style.background = "rgba(100, 0, 0, 0.95)";
                     gameOverUI.style.display = 'block';
-                    jumpscareActive = false; // Matikan urutan aktif
-                    // Pastikan kamera tetap menatap monster
-                    camera.lookAt(wendigo.position.x, wendigo.position.y + 2.7, wendigo.position.z);
+                    jumpscareActive = false;
                 }
             }
 
