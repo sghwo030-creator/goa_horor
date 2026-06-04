@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pelarian Goa Tambang Wendigo</title>
+    <title>Saturasi Teror: Goa Tambang Realistis</title>
     <style>
         body {
             margin: 0;
             overflow: hidden;
-            background-color: #020202;
+            background-color: #000;
             font-family: 'Courier New', Courier, monospace;
         }
         #canvas-container {
@@ -20,99 +20,127 @@
             top: 20px;
             left: 20px;
             color: #ff3333;
-            font-size: 20px;
+            font-size: 18px;
             text-shadow: 2px 2px 4px #000;
             pointer-events: none;
             z-index: 10;
         }
+        #blood-overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: radial-gradient(circle, rgba(255,0,0,0) 30%, rgba(150,0,0,0.8) 100%);
+            pointer-events: none;
+            z-index: 5;
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
         #instructions {
             position: absolute;
-            top: 50%;
-            left: 50%;
+            top: 50%; left: 50%;
             transform: translate(-50%, -50%);
-            color: white;
-            text-align: center;
-            background: rgba(0,0,0,0.9);
-            padding: 30px;
-            border: 2px solid #ff3333;
-            border-radius: 10px;
-            cursor: pointer;
-            z-index: 20;
+            color: white; text-align: center;
+            background: rgba(5, 5, 5, 0.95);
+            padding: 30px; border: 2px solid #550000;
+            border-radius: 5px; cursor: pointer; z-index: 20;
+            box-shadow: 0 0 20px #ff000033;
         }
-        .screen {
+        #game-over {
             display: none;
             position: absolute;
-            top: 50%;
-            left: 50%;
+            top: 50%; left: 50%;
             transform: translate(-50%, -50%);
-            text-align: center;
-            font-size: 40px;
-            font-weight: bold;
-            text-shadow: 0 0 10px #000;
-            z-index: 20;
-            padding: 20px;
-            background: rgba(0,0,0,0.8);
-            border-radius: 10px;
+            color: #ff0000; text-align: center;
+            font-size: 50px; font-weight: bold;
+            text-shadow: 0 0 20px #ff0000; z-index: 30;
         }
-        #game-over { color: #ff0000; border: 2px solid #ff0000; }
-        #game-win { color: #33ff33; border: 2px solid #33ff33; }
+        #game-win {
+            display: none;
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            color: #33ff33; text-align: center;
+            font-size: 40px; font-weight: bold;
+            text-shadow: 0 0 20px #00ff00; z-index: 30;
+        }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
 <body>
 
     <div id="canvas-container"></div>
+    <div id="blood-overlay"></div>
     
     <div id="ui">
-        <div>Jarak Wendigo: <span id="distance">Mengejar...</span></div>
-        <div>Sisa Jarak ke Keluar: <span id="progress">360m</span></div>
+        <div>Anomali Goa: <span id="distance">Mendeteksi...</span></div>
+        <div>Sisa Terowongan: <span id="progress">360m</span></div>
     </div>
 
     <div id="instructions">
-        <h1>PELARIAN GOA TAMBANG</h1>
-        <p>Lorong ini rawan longsor. Sesuatu mengejarmu dari kegelapan belakang!</p>
-        <p style="font-weight: bold; color: #ff3333;">KLIK DI SINI UNTUK MULAI BERLARI</p>
-        <p style="font-size: 14px; color: #aaa;">Kontrol: WASD / Panah (Bergerak) + Mouse (Melihat)</p>
+        <h1 style="color: #8b0000; letter-spacing: 3px;">DEEP MINING SHAFT #04</h1>
+        <p>Struktur goa tidak stabil. Sesuatu yang lapar mengejarmu dari belakang.</p>
+        <p style="font-weight: bold; color: #ff3333; margin-top: 20px; animation: blink 1.5s infinite;">[ KLIK UNTUK MASUK KE KEGELAPAN ]</p>
     </div>
 
-    <div id="game-over" class="screen">
-        KAMU MATI DIMAKAN WENDIGO!
-        <p style="font-size: 20px; color: white; margin-top: 20px;">Refresh halaman untuk coba lagi</p>
+    <div id="game-over">
+        TERMANSA OLEH WENDIGO!
+        <p style="font-size: 18px; color: #aaa; margin-top: 20px; font-weight: normal;">Jiwa kamu terperangkap di tambang ini selamanya.<br>Refresh (F5) untuk mencoba lagi.</p>
     </div>
 
-    <div id="game-win" class="screen">
-        KAMU BERHASIL KELUAR SELAMAT!
-        <p style="font-size: 20px; color: white; margin-top: 20px;">Kamu berhasil lolos dari teror goa tambang.</p>
+    <div id="game-win">
+        KAMU BERHASIL LOLOS!
+        <p style="font-size: 20px; color: white; margin-top: 20px; font-weight: normal;">Kamu melihat cahaya matahari dan selamat dari kejaran makhluk purba.</p>
     </div>
 
     <script>
-        // --- SETUP SCREEN & SCENE ---
-        const container = document.getElementById('canvas-container');
-        const scene = new THREE.Scene();
-        
-        // Kabut hitam super pekat khas lorong tambang dalam bawah tanah
-        scene.fog = new THREE.FogExp2(0x020202, 0.18); 
+        // --- PROSEDURAL TEKSTUR BATU (BUMP MAP) ---
+        // Membuat tekstur noise langsung dari kode agar dinding terlihat kasar & berlubang realistis
+        function generateNoiseTexture() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 512; canvas.height = 512;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#222222'; ctx.fillRect(0, 0, 512, 512);
+            
+            // Beri bercak kasar mika/batu halus
+            for (let i = 0; i < 30000; i++) {
+                let x = Math.random() * 512;
+                let y = Math.random() * 512;
+                let size = Math.random() * 2 + 1;
+                let shade = Math.floor(Math.random() * 80);
+                ctx.fillStyle = `rgb(${shade},${shade},${shade})`;
+                ctx.fillRect(x, y, size, size);
+            }
+            const texture = new THREE.CanvasTexture(canvas);
+            texture.wrapS = THREE.RepeatWrapping; texture.wrapT = THREE.RepeatWrapping;
+            texture.repeat.set(4, 30); // Pengulangan sepanjang lorong
+            return texture;
+        }
 
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const bumpTex = generateNoiseTexture();
+
+        // --- SETUP SCENE & GRAPHICS ---
+        const container = document.getElementById('canvas-container');
+        const bloodOverlay = document.getElementById('blood-overlay');
+        const scene = new THREE.Scene();
+        scene.fog = new THREE.FogExp2(0x010102, 0.22); // Kabut super tebal membatasi pandangan
+
+        const camera = new THREE.PerspectiveCamera(65, window.innerWidth / window.innerHeight, 0.1, 1000);
         const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.toneMapping = THREE.ACESFilmicToneMapping; // Efek pencahayaan sinematik/realistis
         container.appendChild(renderer.domElement);
 
-        let isGameOver = false;
-        let isGameWin = false;
-        let gameStarted = false;
-        
-        // --- DIMENSI LORONG TAMBANG ---
-        const tunnelWidth = 7;
-        const tunnelHeight = 5;
-        const tunnelLength = 400; // Panjang lorong pelarian
+        let isGameOver = false, isGameWin = false, gameStarted = false;
+        let clock = new THREE.Clock();
 
-        // Posisi Awal Pemain (Di ujung lorong Z = 180, menghadap ke arah Z negatif)
-        camera.position.set(0, 2, 180);
-        const playerSpeed = 0.16;
+        const tunnelWidth = 6;
+        const tunnelHeight = 4.5;
+        const tunnelLength = 400;
+
+        camera.position.set(0, 1.8, 185); // Tinggi mata manusia realistis
+        const playerSpeed = 0.15;
         const move = { forward: false, backward: false, left: false, right: false };
 
-        // --- SISTEM KONTROL (POINTER LOCK) ---
+        // --- SISTEM KONTROL ---
         const instructions = document.getElementById('instructions');
         instructions.addEventListener('click', () => { container.requestPointerLock(); });
 
@@ -127,9 +155,9 @@
 
         document.addEventListener('mousemove', (e) => {
             if (document.pointerLockElement !== container || isGameOver || isGameWin) return;
-            camera.rotation.y -= e.movementX * 0.0025;
-            camera.rotation.x -= e.movementY * 0.0025;
-            camera.rotation.x = Math.max(-Math.PI/3, Math.min(Math.PI/3, camera.rotation.x));
+            camera.rotation.y -= e.movementX * 0.002;
+            camera.rotation.x -= e.movementY * 0.002;
+            camera.rotation.x = Math.max(-Math.PI/2.5, Math.min(Math.PI/2.5, camera.rotation.x));
         });
 
         const handleKey = (e, isDown) => {
@@ -141,166 +169,235 @@
         document.addEventListener('keydown', (e) => handleKey(e, true));
         document.addEventListener('keyup', (e) => handleKey(e, false));
 
-        // --- MEMBUAT STRUKTUR LORONG TAMBANG (STRUKTUR ANTI LONGSOR) ---
-        
-        // 1. Lantai Tanah Tambang
+        // --- ARSITEKTUR LORONG TAMBANG ---
+        // Material Dinding Berbatu Realistis
+        const rockMaterial = new THREE.MeshStandardMaterial({
+            color: 0x1c1a18,
+            bumpMap: bumpTex,
+            bumpScale: 0.05,
+            roughness: 0.95,
+            metalness: 0.1
+        });
+
+        // Lantai Tanah Goa
         const floorGeo = new THREE.PlaneGeometry(tunnelWidth, tunnelLength);
-        const floorMat = new THREE.MeshStandardMaterial({ color: 0x14110f, roughness: 0.9 });
-        const floor = new THREE.Mesh(floorGeo, floorMat);
+        const floor = new THREE.Mesh(floorGeo, rockMaterial);
         floor.rotation.x = -Math.PI / 2;
         scene.add(floor);
 
-        // 2. Atap Tambang
+        // Atap Goa
         const roofGeo = new THREE.PlaneGeometry(tunnelWidth, tunnelLength);
-        const roofMat = new THREE.MeshStandardMaterial({ color: 0x0f0d0c, roughness: 1.0 });
-        const roof = new THREE.Mesh(roofGeo, roofMat);
-        roof.rotation.x = Math.PI / 2;
-        roof.position.y = tunnelHeight;
+        const roof = new THREE.Mesh(roofGeo, rockMaterial);
+        roof.rotation.x = Math.PI / 2; roof.position.y = tunnelHeight;
         scene.add(roof);
 
-        // 3. Dinding Kiri & Kanan (Membentuk Lorong Sempit)
+        // Dinding Kanan & Kiri
         const wallGeo = new THREE.PlaneGeometry(tunnelLength, tunnelHeight);
-        const wallMat = new THREE.MeshStandardMaterial({ color: 0x12100e, roughness: 1.0 });
-        
-        const leftWall = new THREE.Mesh(wallGeo, wallMat);
-        leftWall.rotation.y = Math.PI / 2;
-        leftWall.position.set(-tunnelWidth / 2, tunnelHeight / 2, 0);
+        const leftWall = new THREE.Mesh(wallGeo, rockMaterial);
+        leftWall.rotation.y = Math.PI / 2; leftWall.position.set(-tunnelWidth / 2, tunnelHeight / 2, 0);
         scene.add(leftWall);
 
-        const rightWall = new THREE.Mesh(wallGeo, wallMat);
-        rightWall.rotation.y = -Math.PI / 2;
-        rightWall.position.set(tunnelWidth / 2, tunnelHeight / 2, 0);
+        const rightWall = new THREE.Mesh(wallGeo, rockMaterial);
+        rightWall.rotation.y = -Math.PI / 2; rightWall.position.set(tunnelWidth / 2, tunnelHeight / 2, 0);
         scene.add(rightWall);
 
-        // 4. Balok Kayu Penyangga Tambang (Archways) sepanjang lorong biar realistis
-        const logMat = new THREE.MeshStandardMaterial({ color: 0x2b1810, roughness: 0.7 });
-        const verticalLogGeo = new THREE.CylinderGeometry(0.12, 0.15, tunnelHeight, 6);
-        const horizontalLogGeo = new THREE.CylinderGeometry(0.12, 0.12, tunnelWidth, 6);
+        // --- DETAIL STRUKTUR: BALOK PENYANGGA & REL KERETA ---
+        const woodMat = new THREE.MeshStandardMaterial({ color: 0x21140e, roughness: 0.9 });
+        const ironMat = new THREE.MeshStandardMaterial({ color: 0x3a3a3a, roughness: 0.5, metalness: 0.8 });
 
-        // Pasang tiang penyangga setiap 12 unit jarak
-        for (let z = -tunnelLength/2; z <= tunnelLength/2; z += 12) {
-            // Tiang Kiri
-            const postLeft = new THREE.Mesh(verticalLogGeo, logMat);
-            postLeft.position.set(-tunnelWidth/2 + 0.2, tunnelHeight/2, z);
-            scene.add(postLeft);
+        for (let z = -tunnelLength/2; z <= tunnelLength/2; z += 10) {
+            // Tiang Penyangga Atas dan Samping (Balok Kayu)
+            const postL = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.12, tunnelHeight), woodMat);
+            postL.position.set(-tunnelWidth/2 + 0.15, tunnelHeight/2, z); scene.add(postL);
 
-            // Tiang Kanan
-            const postRight = new THREE.Mesh(verticalLogGeo, logMat);
-            postRight.position.set(tunnelWidth/2 - 0.2, tunnelHeight/2, z);
-            scene.add(postRight);
+            const postR = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.12, tunnelHeight), woodMat);
+            postR.position.set(tunnelWidth/2 - 0.15, tunnelHeight/2, z); scene.add(postR);
 
-            // Balok Atas penahan longsor
-            const beamTop = new THREE.Mesh(horizontalLogGeo, logMat);
-            beamTop.rotation.z = Math.PI / 2;
-            beamTop.position.set(0, tunnelHeight - 0.15, z);
-            scene.add(beamTop);
+            const beamT = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, tunnelWidth), woodMat);
+            beamT.rotation.z = Math.PI / 2; beamT.position.set(0, tunnelHeight - 0.1, z); scene.add(beamT);
+
+            // Bantalan Kayu Rel di lantai (Ties)
+            const tie = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.05, 0.2), woodMat);
+            tie.position.set(0, 0.02, z); scene.add(tie);
+            const tie2 = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.05, 0.2), woodMat);
+            tie2.position.set(0, 0.02, z + 5); scene.add(tie2);
         }
 
-        // --- PENCAHAYAAN (SENTER UTAMA) ---
-        const flashlight = new THREE.SpotLight(0xfffaed, 2.5, 35, Math.PI / 5, 0.6, 1);
+        // Besi Rel Panjang (Left & Right Rails)
+        const railGeo = new THREE.BoxGeometry(0.05, 0.06, tunnelLength);
+        const railL = new THREE.Mesh(railGeo, ironMat); railL.position.set(-0.8, 0.05, 0); scene.add(railL);
+        const railR = new THREE.Mesh(railGeo, ironMat); railR.position.set(0.8, 0.05, 0); scene.add(railR);
+
+
+        // --- SISTEM COHAYA: SENTER PEMAIN ---
+        const flashlight = new THREE.SpotLight(0xfffbe6, 3, 28, Math.PI / 5.5, 0.5, 1.2);
         scene.add(flashlight);
         flashlight.target = new THREE.Object3D();
         scene.add(flashlight.target);
 
-        // Cahaya goa alami ambient (sangat redup)
-        const ambientLight = new THREE.AmbientLight(0x050508, 0.3);
-        scene.add(ambientLight);
+        // Cahaya ambient luar biasa redup agar bayangan terlihat pekat realistis
+        const ambient = new THREE.AmbientLight(0x020203, 0.2);
+        scene.add(ambient);
 
-        // --- MUSUH: WENDIGO (Mengejar dari Belakang) ---
-        const wendigoGroup = new THREE.Group();
-        
-        // Badan kurus tinggi khas Wendigo
-        const bodyGeo = new THREE.CylinderGeometry(0.2, 0.08, 2.8, 5);
-        const wendigoMat = new THREE.MeshBasicMaterial({ color: 0x080808 });
-        const wendigoBody = new THREE.Mesh(bodyGeo, wendigoMat);
-        wendigoBody.position.y = 1.4;
-        wendigoGroup.add(wendigoBody);
 
-        // Mata Merah Menyala di kegelapan
-        const eyeGeo = new THREE.SphereGeometry(0.06, 6, 6);
+        // --- MUSUH TINGKAT TINGGI: WENDIGO ---
+        const wendigo = new THREE.Group();
+        const bodyMat = new THREE.MeshStandardMaterial({ color: 0x050505, roughness: 1.0 });
+
+        // Tubuh kurus tinggi ringkih
+        const torso = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.05, 2.5), bodyMat);
+        torso.position.y = 1.6; wendigo.add(torso);
+
+        // Kepala Tengkorak / Lonjong
+        const head = new THREE.Mesh(new THREE.SphereGeometry(0.22, 8, 8), bodyMat);
+        head.position.y = 2.9; wendigo.add(head);
+
+        // Tanduk Ranting Mengerikan (Antlers)
+        const antlerMat = new THREE.MeshBasicMaterial({ color: 0x010101 });
+        for(let i = 0; i < 4; i++) {
+            const horn = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.3, 0.03), antlerMat);
+            horn.position.set(i % 2 === 0 ? 0.15 : -0.15, 3.1 + (i*0.05), 0);
+            horn.rotation.z = i % 2 === 0 ? 0.5 + (i*0.2) : -0.5 - (i*0.2);
+            wendigo.add(horn);
+        }
+
+        // Mata Merah Bersinar (Glow Intans)
         const eyeMat = new THREE.MeshBasicMaterial({ color: 0xff0000 });
-        const leftEye = new THREE.Mesh(eyeGeo, eyeMat); leftEye.position.set(-0.12, 2.7, -0.2);
-        const rightEye = new THREE.Mesh(eyeGeo, eyeMat); rightEye.position.set(0.12, 2.7, -0.2);
-        wendigoGroup.add(leftEye, rightEye);
+        const eyeL = new THREE.Mesh(new THREE.SphereGeometry(0.04, 6, 6), eyeMat); eyeL.position.set(-0.09, 2.9, -0.18);
+        const eyeR = new THREE.Mesh(new THREE.SphereGeometry(0.04, 6, 6), eyeMat); eyeR.position.set(0.09, 2.9, -0.18);
+        wendigo.add(eyeL, eyeR);
 
-        // Sorot lampu merah mistis di sekelilingnya
-        const wendigoLight = new THREE.PointLight(0xff0000, 1.5, 10);
-        wendigoLight.position.y = 2;
-        wendigoGroup.add(wendigoLight);
+        // Lengan Cacat Panjang Menjuntai
+        const armL = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.02, 2), bodyMat);
+        armL.position.set(-0.25, 1.8, -0.2); armL.rotation.z = 0.2; armL.rotation.x = -0.4;
+        wendigo.add(armL);
 
-        // Spawning Wendigo di belakang pemain (Z = 195)
-        wendigoGroup.position.set(0, 0, 195);
-        scene.add(wendigoGroup);
+        const armR = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.02, 2), bodyMat);
+        armR.position.set(0.25, 1.8, -0.2); armR.rotation.z = -0.2; armR.rotation.x = -0.4;
+        wendigo.add(armR);
 
-        // Kecepatan Wendigo sedikit di bawah kecepatan lari pemain, jadi kamu harus terus maju!
-        const wendigoSpeed = 0.148; 
+        // Lampu Merah Lembut mengikuti wendigo untuk menerangi sekitarnya secara gaib
+        const wendigoGlow = new THREE.PointLight(0xff0000, 1.8, 8);
+        wendigoGlow.position.y = 2; wendigo.add(wendigoGlow);
 
-        // --- GAME LOOP LOGIC ---
+        wendigo.position.set(0, 0, 196); // Muncul di belakang
+        scene.add(wendigo);
+
+        const wendigoBaseSpeed = 0.146;
+
+
+        // --- ANIMASI GAME & LOGIKA ---
         const distanceUI = document.getElementById('distance');
         const progressUI = document.getElementById('progress');
         const gameOverUI = document.getElementById('game-over');
         const gameWinUI = document.getElementById('game-win');
 
+        let deathTimer = 0;
+
         function animate() {
             requestAnimationFrame(animate);
+            const time = clock.getElapsedTime();
 
             if (gameStarted && !isGameOver && !isGameWin) {
                 
-                // Update Arah Senter Sesuai Pandangan Kamera
+                // 1. UPDATE SENTER & EFEK RUSAK/BERKEDIP
                 flashlight.position.copy(camera.position);
                 const dir = new THREE.Vector3();
                 camera.getWorldDirection(dir);
                 flashlight.target.position.copy(camera.position).add(dir);
 
-                // Pergerakan Karakter di Lorong Lurus
+                const distance = camera.position.distanceTo(wendigo.position);
+
+                // Jika wendigo dekat (di bawah 15 meter), senter mulai berkedip rusak karena gelombang mistis
+                if (distance < 16 && Math.random() < (16 - distance) * 0.06) {
+                    flashlight.intensity = 0.1; // Redup total mendadak
+                } else {
+                    flashlight.intensity = 2.5 + Math.sin(time * 2) * 0.1; // Efek binar senter normal
+                }
+
+                // 2. PERGERAKAN PEMAIN & HEAD BOBBING (KAMERA BERJALAN)
                 const forwardVec = new THREE.Vector3(dir.x, 0, dir.z).normalize();
                 const sideVec = new THREE.Vector3().crossVectors(camera.up, forwardVec).normalize();
 
-                if (move.forward) camera.position.addScaledVector(forwardVec, playerSpeed);
-                if (move.backward) camera.position.addScaledVector(forwardVec, -playerSpeed);
-                if (move.left) camera.position.addScaledVector(sideVec, playerSpeed);
-                if (move.right) camera.position.addScaledVector(sideVec, -playerSpeed);
+                let isMoving = false;
+                if (move.forward) { camera.position.addScaledVector(forwardVec, playerSpeed); isMoving = true; }
+                if (move.backward) { camera.position.addScaledVector(forwardVec, -playerSpeed); isMoving = true; }
+                if (move.left) { camera.position.addScaledVector(sideVec, playerSpeed); isMoving = true; }
+                if (move.right) { camera.position.addScaledVector(sideVec, -playerSpeed); isMoving = true; }
 
-                // BARRIER TABRAKAN: Batasi gerakan agar tidak menembus dinding kiri-kanan terowongan
-                camera.position.x = Math.max(-tunnelWidth/2 + 0.7, Math.min(tunnelWidth/2 - 0.7, camera.position.x));
-                // Batasi ujung belakang map agar tidak mundur keterusan
-                camera.position.z = Math.min(190, camera.position.z);
-
-                // AI PERGERAKAN WENDIGO (Selalu berlari lurus mengejar Z koordinat pemain)
-                wendigoGroup.lookAt(camera.position.x, wendigoGroup.position.y, camera.position.z);
-                const wendigoDir = new THREE.Vector3().subVectors(camera.position, wendigoGroup.position);
-                wendigoDir.y = 0; 
-                wendigoDir.normalize();
-                wendigoGroup.position.addScaledVector(wendigoDir, wendigoSpeed);
-
-                // Hitung Jarak Real-time antara Pemain dan Wendigo
-                const distance = camera.position.distanceTo(wendigoGroup.position);
-                
-                // Update HUD Text UI Informasi Jarak
-                if (distance > 25) {
-                    distanceUI.innerText = "Mengejar (Jauh)"; distanceUI.style.color = "#33ff33";
-                } else if (distance > 10) {
-                    distanceUI.innerText = "Makin Dekat!"; distanceUI.style.color = "#ffff33";
+                // Simulasi ayunan kepala manusia saat berjalan/berlari
+                if (isMoving) {
+                    camera.position.y = 1.8 + Math.sin(time * 12) * 0.06;
                 } else {
-                    distanceUI.innerText = "DI BELAKANGMU!!"; distanceUI.style.color = "#ff0000";
+                    camera.position.y = 1.8 + Math.sin(time * 1.5) * 0.01; // Efek nafas halus saat diam
                 }
 
-                // Hitung Sisa Jarak Terowongan ke Pintu Keluar (Ujung Lorong berada di Z = -185)
-                const remainingDistance = Math.max(0, Math.round(camera.position.z - (-185)));
-                progressUI.innerText = remainingDistance + " meter lagi";
+                // Batasan fisik dinding terowongan (Tabrakan Dinding)
+                camera.position.x = Math.max(-tunnelWidth/2 + 0.6, Math.min(tunnelWidth/2 - 0.6, camera.position.x));
+                camera.position.z = Math.min(190, camera.position.z); // Pembatas jalan buntu belakang
 
-                // KONDISI GAME OVER (Tertangkap)
-                if (distance < 1.6) {
+                // 3. AI PERGERAKAN WENDIGO
+                wendigo.lookAt(camera.position.x, wendigo.position.y, camera.position.z);
+                const wendigoDir = new THREE.Vector3().subVectors(camera.position, wendigo.position);
+                wendigoDir.y = 0; wendigoDir.normalize();
+                
+                // Semakin dekat ke finish, Wendigo semakin marah dan cepat!
+                let speedMultiplier = camera.position.z < 0 ? 1.04 : 1.0;
+                wendigo.position.addScaledVector(wendigoDir, wendigoBaseSpeed * speedMultiplier);
+
+                // Tambahkan efek getaran tangan Wendigo (creepy twitch)
+                armL.rotation.x = -0.4 + Math.sin(time * 30) * 0.1;
+                armR.rotation.x = -0.4 + Math.cos(time * 30) * 0.1;
+
+                // 4. UPDATE HUD & UI VIGNETTE
+                if (distance > 20) {
+                    distanceUI.innerText = "Stabil (Jauh)"; distanceUI.style.color = "#33ff33";
+                    bloodOverlay.style.opacity = 0;
+                } else if (distance > 8) {
+                    distanceUI.innerText = "TERDETEKSI MENDEKAT!"; distanceUI.style.color = "#ffff33";
+                    bloodOverlay.style.opacity = (20 - distance) / 20; // Layar mulai menggelap merah di sudut
+                } else {
+                    distanceUI.innerText = "MUTLAK DI BELAKANGMU!!"; distanceUI.style.color = "#ff0000";
+                    bloodOverlay.style.opacity = 0.8;
+                }
+
+                const remainingDistance = Math.max(0, Math.round(camera.position.z - (-185)));
+                progressUI.innerText = remainingDistance + " meter";
+
+                // 5. STRUKTUR JUMPSCARE KEMATIAN (TOUCH PLAYER = JUMPSCARE & DEATH)
+                if (distance < 1.7) {
                     isGameOver = true;
                     document.exitPointerLock();
-                    gameOverUI.style.display = 'block';
                 }
 
-                // KONDISI MENANG (Berhasil keluar dari ujung lorong terowongan tambang)
+                // KONDISI MENANG
                 if (camera.position.z <= -185) {
                     isGameWin = true;
                     document.exitPointerLock();
                     gameWinUI.style.display = 'block';
+                }
+            } 
+            
+            // JUMPSCARE ANIMATION SEQUENCE (Saat Kalah)
+            else if (isGameOver && deathTimer < 120) {
+                deathTimer++;
+
+                // Paksa Kamera berputar 180 derajat langsung melihat wajah mengerikan Wendigo
+                camera.lookAt(wendigo.position.x, wendigo.position.y + 2.5, wendigo.position.z);
+                
+                // Dekatkan kamera secara paksa ke wajah wendigo demi efek jumpscare maksimal
+                camera.position.lerp(new THREE.Vector3(wendigo.position.x, wendigo.position.y + 2.4, wendigo.position.z + 1.2), 0.1);
+                
+                // Efek Kamera Berguncang Hebat (Violent Camera Shake)
+                camera.position.x += (Math.random() - 0.5) * 0.15;
+                camera.position.y += (Math.random() - 0.5) * 0.15;
+
+                // Flash layar jadi merah darah penuh secara instan
+                bloodOverlay.style.background = "rgba(180, 0, 0, 0.95)";
+                bloodOverlay.style.opacity = 1;
+
+                if(deathTimer >= 100) {
+                    gameOverUI.style.display = 'block';
                 }
             }
 
