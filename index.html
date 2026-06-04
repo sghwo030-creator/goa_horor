@@ -2,8 +2,8 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SHAFT: EVOLUTION (PART 1) - GOLD EDITION</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SHAFT: EVOLUTION (PART 1) - CROSS PLATFORM</title>
     <style>
         :root {
             --primary-red: #ff1a1a;
@@ -14,11 +14,11 @@
         body {
             margin: 0; overflow: hidden; background-color: var(--bg-dark);
             font-family: 'Courier New', Courier, monospace; user-select: none;
-            color: #fff;
+            color: #fff; touch-action: none;
         }
         #canvas-container { width: 100vw; height: 100vh; display: none; }
         
-        /* MODERN CINEMATIC MAIN MENU */
+        /* CINEMATIC MAIN MENU */
         #main-menu {
             position: absolute; top: 0; left: 0; width: 100vw; height: 100vh;
             background: radial-gradient(circle at center, #140505 0%, #050508 100%);
@@ -26,87 +26,85 @@
             z-index: 100; transition: opacity 0.8s ease;
         }
         .menu-title {
-            font-size: 56px; color: #8a0000; letter-spacing: 12px; margin-bottom: 5px;
-            font-weight: 900; text-align: center;
-            animation: pulseGlow 3s infinite alternate;
+            font-size: 48px; color: #8a0000; letter-spacing: 12px; margin-bottom: 5px;
+            font-weight: 900; text-align: center; animation: pulseGlow 3s infinite alternate;
         }
-        .menu-subtitle { color: #555; font-size: 11px; margin-bottom: 50px; letter-spacing: 4px; text-transform: uppercase; }
+        @media(max-width: 768px) { .menu-title { font-size: 36px; letter-spacing: 6px; } }
+        .menu-subtitle { color: #555; font-size: 11px; margin-bottom: 40px; letter-spacing: 4px; text-transform: uppercase; }
         
         .menu-btn {
             background: rgba(15, 5, 5, 0.7); border: 1px solid #5a0f0f; color: #bbb;
-            padding: 16px 45px; font-size: 13px; font-family: inherit; font-weight: bold;
-            cursor: pointer; letter-spacing: 4px; margin: 10px; width: 280px; text-align: center;
-            box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
-            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            padding: 14px 40px; font-size: 13px; font-family: inherit; font-weight: bold;
+            cursor: pointer; letter-spacing: 3px; margin: 8px; width: 260px; text-align: center;
+            transition: all 0.3s ease;
         }
-        .menu-btn:hover {
-            background: #6a0000; color: #fff; 
-            box-shadow: 0 0 20px var(--glow-red), inset 0 0 5px rgba(255,255,255,0.2); 
-            transform: translateY(-2px);
-        }
+        .menu-btn:hover { background: #6a0000; color: #fff; box-shadow: 0 0 20px var(--glow-red); }
 
         @keyframes pulseGlow {
             0% { text-shadow: 0 0 10px rgba(138, 0, 0, 0.5); transform: scale(1); }
-            100% { text-shadow: 0 0 25px #ff0000, 0 0 5px #fff; transform: scale(1.02); }
+            100% { text-shadow: 0 0 25px #ff0000; transform: scale(1.02); }
         }
 
-        /* OVERLAYS & INTERFACES */
         .sub-panel {
             display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            background: rgba(4, 4, 6, 0.98); border: 1px solid #4a1212; padding: 35px;
-            width: 420px; z-index: 110; box-shadow: 0 0 40px rgba(0,0,0,0.9);
+            background: rgba(4, 4, 6, 0.98); border: 1px solid #4a1212; padding: 25px;
+            width: 85%; max-width: 400px; z-index: 110; box-shadow: 0 0 40px rgba(0,0,0,0.9);
         }
-        .panel-close {
-            background: #1a1a1a; border: 1px solid #333; color: #888; padding: 6px 12px; 
-            cursor: pointer; float: right; font-family: inherit; transition: all 0.2s;
-        }
-        .panel-close:hover { color: #fff; background: #c00; }
+        .panel-close { background: #1a1a1a; border: 1px solid #333; color: #888; padding: 6px 12px; cursor: pointer; float: right; }
 
-        /* ADVANCED LOADING SCREEN */
+        /* LOADING SCREEN */
         #loading-screen {
             display: none; position: absolute; top: 0; left: 0; width: 100vw; height: 100vh;
             background: #000; z-index: 200; flex-direction: column; justify-content: center; align-items: center;
             transition: opacity 0.6s ease;
         }
-        #loading-bar-container {
-            width: 400px; height: 3px; background: #0f0f15; border: 1px solid #222; margin-top: 25px;
-            border-radius: 2px; overflow: hidden;
-        }
-        #loading-bar { width: 0%; height: 100%; background: var(--primary-red); box-shadow: 0 0 12px #ff3333; transition: width 0.1s ease; }
-        #loading-text { font-size: 14px; color: #aaa; letter-spacing: 2px; font-weight: bold; }
-        #loading-log { font-size: 11px; color: #444; margin-top: 12px; font-style: italic; }
+        #loading-bar-container { width: 80%; max-width: 400px; height: 3px; background: #0f0f15; border: 1px solid #222; margin-top: 25px; }
+        #loading-bar { width: 0%; height: 100%; background: var(--primary-red); box-shadow: 0 0 12px #ff3333; }
+        #loading-text { font-size: 13px; color: #aaa; letter-spacing: 2px; font-weight: bold; text-align: center; }
+        #loading-log { font-size: 10px; color: #444; margin-top: 12px; font-style: italic; text-align: center; }
 
-        /* HUD IN-GAME SYSTEM */
-        #ui {
-            position: absolute; top: 25px; left: 25px; color: var(--primary-red);
-            font-size: 14px; text-shadow: 2px 2px 5px #000; pointer-events: none; z-index: 10;
-            opacity: 0; transition: opacity 1s; letter-spacing: 1px;
+        /* RESPONSIVE HUD LAYOUT (TOP LEFT CLUSTER) */
+        #ui-hud-wrapper {
+            position: absolute; top: 20px; left: 20px; display: flex; flex-direction: column; gap: 15px; z-index: 10; pointer-events: none;
         }
-        .hud-container {
-            position: absolute; bottom: 35px; width: 240px; height: 6px;
-            background: rgba(10,10,12,0.8); border: 1px solid #252525; z-index: 10; display: none;
-        }
+        #ui { color: var(--primary-red); font-size: 13px; text-shadow: 2px 2px 4px #000; margin-bottom: 5px; }
+        .hud-container { width: 180px; height: 5px; background: rgba(10,10,12,0.8); border: 1px solid #252525; position: relative; display: none; }
         .hud-bar { width: 100%; height: 100%; }
-        #stamina-container { left: 35px; border-color: #500; }
-        #stamina-bar { background: #d61c1c; transition: width 0.1s, background-color 0.3s; }
-        #battery-container { left: 305px; border-color: #005; }
+        #stamina-bar { background: #d61c1c; }
         #battery-bar { background: #00e6b8; }
-        #fear-container { left: 575px; border-color: #407; }
-        #fear-bar { background: #8822ff; width: 0%; transition: width 0.2s; }
-        .hud-label { position: absolute; top: -20px; left: 0; font-size: 10px; font-weight: bold; letter-spacing: 1px; text-shadow: 1px 1px 2px #000; }
+        #fear-bar { background: #8822ff; width: 0%; }
+        .hud-label { position: absolute; top: -16px; left: 0; font-size: 9px; font-weight: bold; letter-spacing: 1px; text-shadow: 1px 1px 2px #000; }
         
-        /* SCREEN FILTERS */
+        /* FILTERS */
         #vignette { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; background: radial-gradient(circle, rgba(0,0,0,0) 15%, rgba(0,0,0,0.99) 100%); pointer-events: none; z-index: 4; display: none; }
-        #blood-overlay { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; background: radial-gradient(circle, rgba(255,0,0,0) 25%, rgba(70,0,0,0.9) 100%); pointer-events: none; z-index: 5; opacity: 0; display: none; transition: opacity 0.3s; }
-        #subtitles { position: absolute; bottom: 20%; left: 50%; transform: translateX(-50%); color: #ffffff; font-size: 20px; text-align: center; text-shadow: 0 0 10px #000, 0 0 15px var(--primary-red); z-index: 15; pointer-events: none; width: 75%; font-weight: bold; letter-spacing: 1px; transition: opacity 0.4s; opacity: 0; }
+        #blood-overlay { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; background: radial-gradient(circle, rgba(255,0,0,0) 25%, rgba(70,0,0,0.9) 100%); pointer-events: none; z-index: 5; opacity: 0; display: none; }
+        #subtitles { position: absolute; bottom: 25%; left: 50%; transform: translateX(-50%); color: #ffffff; font-size: 16px; text-align: center; text-shadow: 0 0 10px #000, 0 0 15px var(--primary-red); z-index: 15; pointer-events: none; width: 85%; font-weight: bold; transition: opacity 0.4s; opacity: 0; }
         
-        /* ENDINGS SYSTEM */
-        .end-screen { display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; font-weight: bold; z-index: 30; width: 85%; }
-        #game-over { color: #ff0000; font-size: 45px; text-shadow: 0 0 35px #ff0000; letter-spacing: 6px; }
-        #game-win { color: #33ff33; font-size: 40px; text-shadow: 0 0 20px #00ff00; }
-        #true-ending { color: #ffaa00; font-size: 38px; text-shadow: 0 0 30px #ffaa00; letter-spacing: 2px; }
-        #secret-ending { color: #00ffff; font-size: 42px; text-shadow: 0 0 35px #00ffff; letter-spacing: 4px; }
-        #fear-ending { color: #b300ff; font-size: 42px; text-shadow: 0 0 40px #9933ff; letter-spacing: 3px; }
+        /* CONTROLS MOBILE LAYOUT */
+        #mobile-ui { display: none; position: absolute; bottom: 0; left: 0; width: 100vw; height: 180px; z-index: 50; pointer-events: none; }
+        #joystick-zone {
+            position: absolute; bottom: 25px; left: 25px; width: 110px; height: 110px;
+            background: rgba(255,255,255,0.03); border: 2px solid rgba(255,255,255,0.15); border-radius: 50%; pointer-events: auto;
+        }
+        #joystick-knob {
+            position: absolute; top: 35px; left: 35px; width: 40px; height: 40px;
+            background: rgba(255, 26, 26, 0.3); border: 1px solid var(--primary-red); border-radius: 50%; transition: transform 0.05s ease;
+        }
+        #mobile-buttons { position: absolute; bottom: 25px; right: 25px; display: flex; gap: 15px; pointer-events: auto; }
+        .m-btn {
+            width: 65px; height: 65px; background: rgba(20, 5, 5, 0.85); border: 1px solid #6a0a0a;
+            color: #fff; border-radius: 50%; font-size: 10px; font-weight: bold; font-family: inherit;
+            display: flex; justify-content: center; align-items: center; text-align: center; box-shadow: 0 0 10px rgba(0,0,0,0.6);
+        }
+        .m-btn:active { background: var(--primary-red); box-shadow: 0 0 15px #ff0000; }
+
+        /* SCREENS ENDING */
+        .end-screen { display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; font-weight: bold; z-index: 60; width: 85%; }
+        #game-over { color: #ff0000; font-size: 32px; text-shadow: 0 0 25px #ff0000; letter-spacing: 4px; }
+        #game-win { color: #33ff33; font-size: 32px; text-shadow: 0 0 20px #00ff00; }
+        #true-ending { color: #ffaa00; font-size: 28px; text-shadow: 0 0 25px #ffaa00; }
+        #secret-ending { color: #00ffff; font-size: 32px; text-shadow: 0 0 25px #00ffff; }
+        #fear-ending { color: #b300ff; font-size: 32px; text-shadow: 0 0 30px #9933ff; }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
@@ -116,9 +114,9 @@
     <audio id="monster"><source src="scream.mp3" type="audio/mpeg"></audio>
 
     <div id="loading-screen">
-        <div id="loading-text">MENGUNDUH INTERNAL MEMORI: 0%</div>
+        <div id="loading-text">MENGUNDUH LOG DATA TAMBANG: 0%</div>
         <div id="loading-bar-container"><div id="loading-bar"></div></div>
-        <div id="loading-log">Mengamankan jaringan sensor tambang...</div>
+        <div id="loading-log">Mengamankan enkripsi pemetaan...</div>
     </div>
 
     <div id="main-menu">
@@ -131,21 +129,19 @@
 
     <div id="settings-panel" class="sub-panel">
         <button class="panel-close" onclick="togglePanel('settings-panel', false)">X</button>
-        <h3 style="color:var(--primary-red); margin-top:0; letter-spacing: 2px;">KONFIGURASI</h3>
+        <h3 style="color:var(--primary-red); margin-top:0;">KONFIGURASI CAMERA</h3>
         <hr style="border-color:#222; margin: 15px 0;">
-        <label style="font-size:12px; color:#aaa; letter-spacing: 1px;">SENSITIVITAS MOUSE</label><br>
-        <input type="range" id="sens-slider" min="6" max="32" value="16" style="width:100%; margin:12px 0;" onchange="updateSensitivity(this.value)">
-        <p style="font-size:11px; color:#666; line-height:1.4;">* Gameplay Note: Hidupkan/matikan senter secara manual memakai tombol fisik [1] dan [2] pada keyboard.</p>
+        <label style="font-size:11px; color:#aaa;">SENSITIVITAS GERAKAN</label><br>
+        <input type="range" id="sens-slider" min="6" max="35" value="18" style="width:100%; margin:12px 0;" onchange="updateSensitivity(this.value)">
     </div>
 
     <div id="wishlist-panel" class="sub-panel">
         <button class="panel-close" onclick="togglePanel('wishlist-panel', false)">X</button>
-        <h3 style="color:#00ffff; margin-top:0; letter-spacing: 2px;">SHAFT PART 2: THE DESCENT</h3>
+        <h3 style="color:#00ffff; margin-top:0;">SHAFT PART 2: THE DESCENT</h3>
         <hr style="border-color:#222; margin: 15px 0;">
-        <p style="font-size:12px; line-height:1.6; color:#bbb;">
-            Kelanjutan langsung eksklusif dari <b>True Ending</b> Volume 1. Jiwamu terperangkap dan diseret paksa menuju inti terdalam kompleks tambang Deep-4. Sanggupkah kamu bangun dari kegelapan?
+        <p style="font-size:11px; line-height:1.6; color:#bbb;">
+            Kelanjutan langsung dari <b>True Ending</b>. Jiwamu diseret paksa menuju kedalaman hutan purba pasca melarikan diri dari terowongan Deep-4.
         </p>
-        <button class="menu-btn" style="width:100%; margin:15px 0 0 0; font-size:12px;" onclick="alert('Sinkronisasi database berhasil! Terdaftar di internal wishlist.')">MASUKKAN DAFTAR TUNGGU</button>
     </div>
 
     <div id="canvas-container"></div>
@@ -153,37 +149,52 @@
     <div id="blood-overlay"></div>
     <div id="subtitles"></div>
     
-    <div id="stamina-container" class="hud-container"><div class="hud-label" style="color:#e62121;">STAMINA (ASMA)</div><div id="stamina-bar" class="hud-bar"></div></div>
-    <div id="battery-container" class="hud-container"><div class="hud-label" style="color:#00ffcc;">KAPASITAS BATERAI [1=ON / 2=OFF]</div><div id="battery-bar" class="hud-bar"></div></div>
-    <div id="fear-container" class="hud-container"><div class="hud-label" style="color:#9933ff;">DEGRADASI MENTAL (FEAR BAR)</div><div id="fear-bar" class="hud-bar"></div></div>
-    
-    <div id="ui">
-        <div>ANOMALI: <span id="distance">Mendeteksi...</span></div>
-        <div>SISA TRACK: <span id="progress">570m</span></div>
+    <div id="ui-hud-wrapper">
+        <div id="ui">
+            <div>ANOMALI: <span id="distance">Mendeteksi...</span></div>
+            <div>TRACK: <span id="progress">570m</span></div>
+        </div>
+        <div id="stamina-container" class="hud-container"><div class="hud-label" style="color:#e62121;">STAMINA (ASMA)</div><div id="stamina-bar" class="hud-bar"></div></div>
+        <div id="battery-container" class="hud-container"><div class="hud-label" style="color:#00ffcc;">SENTER POWER</div><div id="battery-bar" class="hud-bar"></div></div>
+        <div id="fear-container" class="hud-container"><div class="hud-label" style="color:#9933ff;">MENTAL STATE (FEAR)</div><div id="fear-bar" class="hud-bar"></div></div>
     </div>
 
-    <div id="game-over" class="end-screen">BAD ENDING: MATI TERCABIK<p style="font-size: 15px; color: #666; margin-top: 20px; font-weight: normal;">Tubuhmu hancur dieksekusi dalam kegelapan abadi.<br>Tekan <b style="color: #fff;">F5</b> untuk memuat ulang memori.</p></div>
-    <div id="game-win" class="end-screen">GOOD ENDING: BERHASIL KABUR<p style="font-size: 17px; color: white; margin-top: 20px; font-weight: normal;">Staminamu stabil, kamu sukses keluar menembus fajar terbit!</p></div>
-    
+    <div id="mobile-ui">
+        <div id="joystick-zone"><div id="joystick-knob"></div></div>
+        <div id="mobile-buttons">
+            <button class="m-btn" id="btn-sprint">TAHAN<br>LARI</button>
+            <button class="m-btn" id="btn-light">SENTER<br>ON/OFF</button>
+        </div>
+    </div>
+
+    <div id="game-over" class="end-screen">BAD ENDING: MATI TERCABIK<p style="font-size: 13px; color: #666; margin-top: 15px;">Ketuk layar / Segarkan halaman untuk memuat ulang memori.</p></div>
+    <div id="game-win" class="end-screen">GOOD ENDING: BERHASIL KABUR<p style="font-size: 14px; color: white; margin-top: 15px;">Kamu sukses keluar menembus fajar terbit!</p></div>
     <div id="true-ending" class="end-screen">
         CANONICAL TRUE ENDING: TEROR BELUM USAI
-        <p style="font-size: 15px; color: #ff3333; margin-top: 25px; font-weight: normal; line-height: 1.8;">
-            Kamu ambruk tak berdaya tepat di mulut keluar akibat komplikasi asma ekstrem...<br>
-            Makhluk itu merayap keluar dan menyeret tubuhmu kembali ke dasar kegelapan.<br><br>
-            <b style="color: #00ffff; font-size:19px; letter-spacing: 2px;">[ BERSAMBUNG KE SHAFT: PART 2 ]</b>
+        <p style="font-size: 13px; color: #ff3333; margin-top: 20px; line-height: 1.6;">
+            Kamu ambruk tak berdaya tepat di mulut goa karena capek banget & asma kumat...<br>
+            Makhluk itu merayap lambat dan menyeret kakimu kembali ke kegelapan goa.<br><br>
+            <b style="color: #00ffff; font-size:15px;">[ BERSAMBUNG KE SHAFT PART 2: THE FOREST ]</b>
         </p>
     </div>
-    
-    <div id="secret-ending" class="end-screen">SECRET ENDING: THE SURVIVOR<p style="font-size: 17px; color: #fff; margin-top: 20px; font-weight: normal;">Menggunakan sisa pelindung helm baja, kamu mengunci gerbang tambang rapat-rapat!</p></div>
-    <div id="fear-ending" class="end-screen">PSYCHOSIS ENDING: MATI KETAKUTAN<p style="font-size: 15px; color: #bbb; margin-top: 20px; font-weight: normal;">Jantungmu gagal berfungsi akibat gelombang kepanikan saraf psikotik total. (Tekan <b style="color: #fff;">F5</b>)</p></div>
+    <div id="secret-ending" class="end-screen">SECRET ENDING: THE SURVIVOR<p style="font-size: 14px; color: #fff; margin-top: 15px;">Menggunakan sisa pelindung helm baja, kamu mengunci gerbang tambang rapat-rapat!</p></div>
+    <div id="fear-ending" class="end-screen">PSYCHOSIS ENDING: MATI KETAKUTAN<p style="font-size: 13px; color: #bbb; margin-top: 15px;">Jantungmu kolaps akibat serangan panik ekstrem.</p></div>
 
     <script>
         function togglePanel(id, show) { document.getElementById(id).style.display = show ? 'block' : 'none'; }
 
-        let mouseSensitivity = 0.0016;
+        let mouseSensitivity = 0.0018;
         function updateSensitivity(val) { mouseSensitivity = val * 0.0001; }
 
-        // SMOOTH TRANSITION LOADING LOADING SCREEN
+        // DETECTION CROSS-PLATFORM HARDWARE
+        let isMobile = false;
+        if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
+            isMobile = true;
+        }
+
+        const breatheSound = document.getElementById("breathing");
+        const monsterSound = document.getElementById("monster");
+
         function startLoadingSequence() {
             togglePanel('main-menu', false);
             const ls = document.getElementById('loading-screen');
@@ -192,21 +203,24 @@
             const lLog = document.getElementById('loading-log');
             ls.style.display = 'flex';
 
+            // Bypass mobile restriction by warming up audios immediately on click
+            breatheSound.play().then(() => breatheSound.pause()).catch(()=>{});
+            monsterSound.play().then(() => monsterSound.pause()).catch(()=>{});
+
             let progress = 0;
             const logMessages = [
-                "Mengunduh algoritma tekstur batuan goa purba...",
-                "Menyusun shader pantulan cahaya senter berintensitas tinggi...",
-                "Mengkalibrasi laju detak jantung dan kapasitas asma...",
-                "Membangun visualisasi kecerdasan buatan Wendigo...",
-                "Membuka isolasi gerbang tambang Deep-4... Sukses!"
+                "Mengunduh skema batuan purba terowongan...",
+                "Menghitung kalkulasi pembiasan cahaya cermin...",
+                "Sinkronisasi sensor detak jantung internal...",
+                "Inisialisasi navigasi AI pemburu anomali...",
+                "Membuka katup isolasi tambang Deep-4... Sukses!"
             ];
 
             const interval = setInterval(() => {
-                progress += Math.floor(Math.random() * 5) + 2;
+                progress += Math.floor(Math.random() * 6) + 2;
                 if (progress > 100) progress = 100;
-                
                 lBar.style.width = progress + "%";
-                lText.innerText = `MENGUNDUH INTERNAL MEMORI: ${progress}%`;
+                lText.innerText = `MENGUNDUH LOG DATA TAMBANG: ${progress}%`;
                 
                 if(progress < 20) lLog.innerText = logMessages[0];
                 else if(progress < 45) lLog.innerText = logMessages[1];
@@ -216,7 +230,6 @@
 
                 if (progress >= 100) {
                     clearInterval(interval);
-                    // Fade out smoothly
                     ls.style.opacity = 0;
                     setTimeout(() => {
                         ls.style.display = 'none';
@@ -224,19 +237,26 @@
                         document.getElementById('vignette').style.display = 'block';
                         document.getElementById('blood-overlay').style.display = 'block';
                         document.querySelectorAll('.hud-container').forEach(el => el.style.display = 'block');
-                        container.requestPointerLock();
+                        
+                        if (isMobile) {
+                            document.getElementById('mobile-ui').style.display = 'block';
+                            gameStarted = true;
+                            showSubtitle("Dada gua sesak banget... asmanya jangan sampai kumat di sini.", 4500);
+                        } else {
+                            container.requestPointerLock();
+                        }
                     }, 600);
                 }
-            }, 50);
+            }, 40);
         }
 
-        // --- THREE.JS PROCEDURAL GRAPHICS ---
+        // --- THREE.JS MAP SETUP ---
         function createAdvancedRockTexture() {
-            const canvas = document.createElement('canvas'); canvas.width = 512; canvas.height = 512;
-            const ctx = canvas.getContext('2d'); ctx.fillStyle = '#11100f'; ctx.fillRect(0, 0, 512, 512);
-            for (let i = 0; i < 35000; i++) {
-                let x = Math.random() * 512; let y = Math.random() * 512; let shade = Math.floor(Math.random() * 30);
-                ctx.fillStyle = `rgb(${shade},${shade},${shade})`; ctx.fillRect(x, y, 1, 3);
+            const canvas = document.createElement('canvas'); canvas.width = 256; canvas.height = 256;
+            const ctx = canvas.getContext('2d'); ctx.fillStyle = '#11100f'; ctx.fillRect(0, 0, 256, 256);
+            for (let i = 0; i < 10000; i++) {
+                let x = Math.random() * 256; let y = Math.random() * 256; let shade = Math.floor(Math.random() * 25);
+                ctx.fillStyle = `rgb(${shade},${shade},${shade})`; ctx.fillRect(x, y, 1, 2);
             }
             const texture = new THREE.CanvasTexture(canvas);
             texture.wrapS = THREE.RepeatWrapping; texture.wrapT = THREE.RepeatWrapping; texture.repeat.set(4, 45);
@@ -257,7 +277,7 @@
         scene.fog = new THREE.FogExp2(0x010103, 0.25);
 
         const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
-        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        const renderer = new THREE.WebGLRenderer({ antialias: !isMobile }); // Matikan antialias di HP biar enteng
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.toneMapping = THREE.ACESFilmicToneMapping;
         container.appendChild(renderer.domElement);
@@ -277,8 +297,6 @@
 
         let battery = 100; let flashlightOn = true; const batteryDrainRate = 0.045; 
         let fear = 0;
-
-        // Flashlight smoothing variables (LERP)
         let currentFlashlightTarget = new THREE.Vector3();
 
         let chaseStarted = false, triggerSequenceActive = false, triggerTimer = 0;
@@ -286,21 +304,15 @@
         let normalEndingDialogueShown = false;
         let secretItemCollected = false;
 
-        const breatheSound = document.getElementById("breathing");
-        const monsterSound = document.getElementById("monster");
-
+        // --- MOUSE & KEYBOARD CONTROL (PC) ---
         document.addEventListener('pointerlockchange', () => {
-            if (document.pointerLockElement === container) {
-                if(!gameStarted) {
-                    gameStarted = true;
-                    ui.style.opacity = 1;
-                    showSubtitle("Dada gua sesak banget... asmanya jangan sampai kumat di sini.", 4500);
-                }
+            if (document.pointerLockElement === container && !isMobile) {
+                if(!gameStarted) { gameStarted = true; showSubtitle("Dada gua sesak banget... asmanya jangan sampai kumat di sini.", 4500); }
             }
         });
 
         document.addEventListener('mousemove', (e) => {
-            if (document.pointerLockElement !== container || isGameOver || isGameWin || isTrueEnding || isSecretEnding || isFearEnding) return;
+            if (isMobile || document.pointerLockElement !== container || isGameOver || isGameWin || isTrueEnding || isSecretEnding || isFearEnding) return;
             camera.rotation.y -= e.movementX * mouseSensitivity;
             camera.rotation.x -= e.movementY * mouseSensitivity;
             camera.rotation.x = Math.max(-Math.PI/2.4, Math.min(Math.PI/2.4, camera.rotation.x));
@@ -313,7 +325,6 @@
             if (key === 'a' || e.key === 'ArrowLeft') move.left = true;
             if (key === 'd' || e.key === 'ArrowRight') move.right = true;
             if (e.key === 'Shift') move.sprint = true;
-            
             if (e.key === '1' && battery > 0) { flashlightOn = true; showSubtitle("* Senter dinyalakan *", 1000); }
             if (e.key === '2') { flashlightOn = false; showSubtitle("* Senter dimatikan *", 1000); }
         });
@@ -327,14 +338,109 @@
             if (e.key === 'Shift') move.sprint = false;
         });
 
+        // --- MOBILE TOUCH LOGIC (HP) ---
+        let touchLookId = null;
+        let lastTouchX = 0, lastTouchY = 0;
+
+        window.addEventListener('touchstart', (e) => {
+            if (!gameStarted || isGameOver || isGameWin || isTrueEnding || isSecretEnding || isFearEnding) return;
+            for(let i=0; i<e.changedTouches.length; i++) {
+                let t = e.changedTouches[i];
+                // Sisi kanan layar untuk mengendalikan arah pandang kamera
+                if(t.clientX > window.innerWidth / 2) {
+                    touchLookId = t.identifier;
+                    lastTouchX = t.clientX;
+                    lastTouchY = t.clientY;
+                }
+            }
+        }, {passive: true});
+
+        window.addEventListener('touchmove', (e) => {
+            if (!gameStarted || isGameOver || isGameWin || isTrueEnding || isSecretEnding || isFearEnding) return;
+            for(let i=0; i<e.changedTouches.length; i++) {
+                let t = e.changedTouches[i];
+                if(t.identifier === touchLookId) {
+                    let dx = t.clientX - lastTouchX;
+                    let dy = t.clientY - lastTouchY;
+                    camera.rotation.y -= dx * (mouseSensitivity * 1.8);
+                    camera.rotation.x -= dy * (mouseSensitivity * 1.8);
+                    camera.rotation.x = Math.max(-Math.PI/2.4, Math.min(Math.PI/2.4, camera.rotation.x));
+                    lastTouchX = t.clientX;
+                    lastTouchY = t.clientY;
+                }
+            }
+        }, {passive: true});
+
+        window.addEventListener('touchend', (e) => {
+            for(let i=0; i<e.changedTouches.length; i++) {
+                if(e.changedTouches[i].identifier === touchLookId) { touchLookId = null; }
+            }
+        });
+
+        // VIRTUAL JOYSTICK LOGIC
+        const joyZone = document.getElementById('joystick-zone');
+        const joyKnob = document.getElementById('joystick-knob');
+        let joyTouchId = null;
+        let joyCenterX = 0, joyCenterY = 0;
+
+        joyZone.addEventListener('touchstart', (e) => {
+            let rect = joyZone.getBoundingClientRect();
+            joyCenterX = rect.left + rect.width/2;
+            joyCenterY = rect.top + rect.height/2;
+            joyTouchId = e.changedTouches[0].identifier;
+        }, {passive: true});
+
+        joyZone.addEventListener('touchmove', (e) => {
+            if(joyTouchId === null) return;
+            let touch = null;
+            for(let i=0; i<e.touches.length; i++) {
+                if(e.touches[i].identifier === joyTouchId) { touch = e.touches[i]; break; }
+            }
+            if(!touch) return;
+
+            let dx = touch.clientX - joyCenterX;
+            let dy = touch.clientY - joyCenterY;
+            let dist = Math.sqrt(dx*dx + dy*dy);
+            let maxDist = 40;
+
+            if(dist > maxDist) { dx = (dx / dist) * maxDist; dy = (dy / dist) * maxDist; }
+            joyKnob.style.transform = `translate(${dx}px, ${dy}px)`;
+
+            move.forward = (dy < -12);
+            move.backward = (dy > 12);
+            move.left = (dx < -12);
+            move.right = (dx > 12);
+        }, {passive: true});
+
+        joyZone.addEventListener('touchend', (e) => {
+            for(let i=0; i<e.changedTouches.length; i++) {
+                if(e.changedTouches[i].identifier === joyTouchId) {
+                    joyTouchId = null;
+                    joyKnob.style.transform = 'translate(0px, 0px)';
+                    move.forward = move.backward = move.left = move.right = false;
+                }
+            }
+        });
+
+        // MOBILE BUTTON HANDLERS
+        const btnSprint = document.getElementById('btn-sprint');
+        btnSprint.addEventListener('touchstart', () => { move.sprint = true; }, {passive: true});
+        btnSprint.addEventListener('touchend', () => { move.sprint = false; });
+
+        const btnLight = document.getElementById('btn-light');
+        btnLight.addEventListener('touchstart', () => {
+            if(battery > 0) {
+                flashlightOn = !flashlightOn;
+                showSubtitle(flashlightOn ? "* Senter dinyalakan *" : "* Senter dimatikan *", 1000);
+            }
+        }, {passive: true});
+
         function showSubtitle(text, duration) {
             subtitles.innerText = text; subtitles.style.opacity = 1;
-            if (duration) {
-                setTimeout(() => { if(subtitles.innerText === text) subtitles.style.opacity = 0; }, duration);
-            }
+            if (duration) { setTimeout(() => { if(subtitles.innerText === text) subtitles.style.opacity = 0; }, duration); }
         }
 
-        // --- MAP ASSEMBLY ---
+        // --- MAP ENVIRONMENT ASSETS ---
         const rockMaterial = new THREE.MeshStandardMaterial({ color: 0x121110, bumpMap: advancedRockTex, bumpScale: 0.08, roughness: 0.8 });
         const floor = new THREE.Mesh(new THREE.PlaneGeometry(tunnelWidth, tunnelLength), rockMaterial); floor.rotation.x = -Math.PI / 2; scene.add(floor);
         const roof = new THREE.Mesh(new THREE.PlaneGeometry(tunnelWidth, tunnelLength), rockMaterial); roof.rotation.x = Math.PI / 2; roof.position.y = tunnelHeight; scene.add(roof);
@@ -347,7 +453,8 @@
             const postR = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.1, tunnelHeight), woodMat); postR.position.set(tunnelWidth/2 - 0.15, tunnelHeight/2, z); scene.add(postR);
         }
 
-        const particleCount = 400; const particleGeo = new THREE.BufferGeometry(); const positions = new Float32Array(particleCount * 3);
+        const particleCount = isMobile ? 150 : 350; 
+        const particleGeo = new THREE.BufferGeometry(); const positions = new Float32Array(particleCount * 3);
         for (let i = 0; i < particleCount * 3; i += 3) {
             positions[i] = (Math.random() - 0.5) * tunnelWidth; positions[i+1] = Math.random() * tunnelHeight; positions[i+2] = (Math.random() - 0.5) * tunnelLength;
         }
@@ -374,12 +481,10 @@
         }
         spawnBatteryPouch(1.8, 190); spawnBatteryPouch(-1.8, -10); spawnBatteryPouch(1.5, -140);
 
-        // HIGH INTENSITY FLASHLIGHT CONFIG (7.5 RATING)
-        const flashlight = new THREE.SpotLight(0xfff5db, 7.5, 38, Math.PI / 6.2, 0.6, 1.0); scene.add(flashlight);
+        const flashlight = new THREE.SpotLight(0xfff5db, 7.5, 35, Math.PI / 6.2, 0.6, 1.0); scene.add(flashlight);
         flashlight.target = new THREE.Object3D(); scene.add(flashlight.target);
         const ambient = new THREE.AmbientLight(0x010102, 0.05); scene.add(ambient);
 
-        // MAKHLUK ANOMALI WENDIGO
         const wendigo = new THREE.Group();
         const bodyMat = new THREE.MeshStandardMaterial({ color: 0x020202, roughness: 1.0 });
         const torso = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.02, 2.7), bodyMat); torso.position.y = 1.6; wendigo.add(torso);
@@ -399,22 +504,18 @@
 
         let jumpscareActive = false, deathSequenceTimer = 0, jumpscareDuration = 70, jumpCamPos = new THREE.Vector3(), normalEndingTimer = 0, normalEndingSequenceStage = 0;
 
-        // --- GAME SYSTEM LOOP ---
+        // --- MAIN GAME LOOP ---
         function animate() {
             requestAnimationFrame(animate);
             const time = clock.getElapsedTime();
 
-            // ADVANCED CAMERA SHAKE & DISTORSI PSIKOTIK MENTAL
             let fearFactor = (fear / 100);
             let fearShake = fearFactor * 0.05;
             let handShakeX = Math.sin(time * 1.6) * (0.001 + fearShake);
             let handShakeY = Math.cos(time * 1.9) * (0.0014 + fearShake);
             if(!isTrueEnding && !isFearEnding) { camera.rotation.x += handShakeX; camera.rotation.y += handShakeY; }
 
-            // Dynamic Motion Blur Simulator via style
-            if(fear > 70 && gameStarted) {
-                container.style.filter = `blur(${Math.min(3, (fear-70)/10)}px)`;
-            } else { container.style.filter = 'none'; }
+            if(fear > 70 && gameStarted) { container.style.filter = `blur(${Math.min(3, (fear-70)/10)}px)`; } else { container.style.filter = 'none'; }
 
             let pulseRate = (chaseStarted || isTrueEnding) ? (isExhausted ? 9.5 : 6.5) : 1.5;
             let pulseIntensity = isExhausted ? 0.18 : (chaseStarted ? 0.06 : 0.01) + (fear/220);
@@ -428,11 +529,10 @@
             posAttr.needsUpdate = true;
 
             if (gameStarted && !isGameOver && !isGameWin && !isTrueEnding && !isSecretEnding && !isFearEnding) {
-                // AAA POLISH: SMOOTH LERP FLASHLIGHT FOLLOW ENGINE
                 flashlight.position.copy(camera.position);
                 const actualCamDir = new THREE.Vector3(); camera.getWorldDirection(actualCamDir);
                 const targetPoint = new THREE.Vector3().copy(camera.position).add(actualCamDir);
-                currentFlashlightTarget.lerp(targetPoint, 0.12); // Efek berat/gemetar pada senter
+                currentFlashlightTarget.lerp(targetPoint, 0.12);
                 flashlight.target.position.copy(currentFlashlightTarget);
 
                 if (flashlightOn && battery > 0) {
@@ -455,7 +555,6 @@
                     if (isExhausted && stamina > 25) isExhausted = false;
                 }
                 staminaBar.style.width = stamina + "%";
-                staminaBar.style.backgroundColor = isExhausted ? "#3a3a3a" : (stamina < 25 ? "#d27900" : "#d61c1c");
 
                 let currentSpeed = isSprinting ? runSpeed : walkSpeed;
                 const forwardVec = new THREE.Vector3(actualCamDir.x, 0, actualCamDir.z).normalize();
@@ -466,7 +565,6 @@
                 if (move.left) camera.position.addScaledVector(sideVec, -currentSpeed); 
                 if (move.right) camera.position.addScaledVector(sideVec, currentSpeed);
 
-                // COLLISION REFILL BATTERY
                 for (let i = batteryPouches.length - 1; i >= 0; i--) {
                     if (camera.position.distanceTo(batteryPouches[i].position) < 1.5) {
                         battery = 100; showSubtitle("[LOGISTIK: Kapasitas Baterai Terisi Penuh!]", 3000);
@@ -484,7 +582,6 @@
                     flashlight.intensity = (chaseStarted && chaseDist < 14) ? Math.max(0.3, 1.0 + Math.random() * 4.5) : 7.5;
                 } else { flashlight.intensity = 0; }
 
-                // HEADBOB ENGINE WITH NATURAL INDEPENDENT AXIS
                 if (isMoving) {
                     let bobSpeed = isSprinting ? 15.5 : (isExhausted ? 7 : 10);
                     camera.position.y = playerHeight + Math.sin(time * bobSpeed) * (isSprinting ? 0.085 : 0.035);
@@ -524,7 +621,6 @@
                     const wendigoDir = new THREE.Vector3().subVectors(camera.position, wendigo.position); wendigoDir.y = 0; wendigoDir.normalize();
                     wendigo.position.addScaledVector(wendigoDir, wendigoBaseSpeed * (camera.position.z < -120 ? 1.28 : 1.0));
 
-                    // DYNAMIC FEAR CALCULATIONS
                     fear += (distance < 20) ? (20 - distance) * 0.018 : -0.07;
                     fear = Math.max(0, fear); fearBar.style.width = Math.min(100, fear) + "%";
 
@@ -532,39 +628,36 @@
                     else if (distance > 10) { distanceUI.innerText = "MENDEKAT!!"; distanceUI.style.color = "#ffff33"; bloodOverlay.style.opacity = (24 - distance) / 24 * 0.6; scene.fog.density = 0.25 + (24 - distance) * 0.008; }
                     else { distanceUI.innerText = "TEPAT DI BELAKANGMU!!!"; distanceUI.style.color = "#ff0000"; bloodOverlay.style.opacity = 0.88; scene.fog.density = 0.42; }
 
-                    // FEAR ENDING CONDITION TRIGGER (100% CAP)
                     if (fear >= 100 && !isFearEnding) {
-                        isFearEnding = true; document.exitPointerLock(); breatheSound.pause(); flashlight.intensity = 0;
+                        isFearEnding = true; if(!isMobile) document.exitPointerLock(); breatheSound.pause(); flashlight.intensity = 0;
                         bloodOverlay.style.background = "#21003d"; bloodOverlay.style.opacity = 1; subtitles.style.opacity = 0;
-                        fearEndingUI.style.display = "block";
+                        fearEndingUI.style.display = "block"; document.getElementById('mobile-ui').style.display = 'none';
                     }
 
                     if (distance < 1.7 && !isGameOver && !isFearEnding) {
-                        isGameOver = true; jumpscareActive = true; document.exitPointerLock(); subtitles.style.opacity = 0; breatheSound.pause();
+                        isGameOver = true; jumpscareActive = true; if(!isMobile) document.exitPointerLock(); subtitles.style.opacity = 0; breatheSound.pause();
                         let faceDir = new THREE.Vector3().subVectors(camera.position, wendigo.position).normalize();
                         jumpCamPos.copy(wendigo.position); jumpCamPos.y += 2.85; jumpCamPos.addScaledVector(faceDir, 0.8); 
+                        document.getElementById('mobile-ui').style.display = 'none';
                     }
                 }
 
                 let remaining = Math.max(0, Math.round(camera.position.z + 285));
                 progressUI.innerText = remaining + " meter";
 
-                // FINISH LINE BRANCHING RE-EVALUATION
                 if (camera.position.z <= -285) {
-                    document.exitPointerLock(); breatheSound.pause(); ui.style.opacity = 0;
+                    if(!isMobile) document.exitPointerLock(); breatheSound.pause(); ui.style.opacity = 0;
+                    document.getElementById('mobile-ui').style.display = 'none';
 
                     if (secretItemCollected) {
                         isSecretEnding = true; secretEndingUI.style.display = 'block'; subtitles.style.opacity = 0;
                     } else if (isExhausted || stamina < 25) {
-                        // CANONICAL TRUE ENDING CONDITIONS MET (Exhausted/Capek Banget!)
                         isTrueEnding = true; normalEndingSequenceStage = 1; normalEndingTimer = 0;
                     } else {
                         isGameWin = true; gameWinUI.style.display = 'block'; subtitles.style.opacity = 0;
                     }
                 }
             } 
-            
-            // CANONICAL TRUE ENDING SCENARIO ("Jancuk Capek Banget")
             else if (isTrueEnding) {
                 normalEndingTimer++;
                 if (normalEndingSequenceStage === 1) {
@@ -585,7 +678,6 @@
                     }
                     let currentOpacity = parseFloat(bloodOverlay.style.opacity || 0);
                     bloodOverlay.style.opacity = Math.min(0.92, currentOpacity + 0.006);
-                    
                     wendigo.position.set(camera.position.x, 0, camera.position.z - 2.8); wendigo.lookAt(camera.position);
                     
                     if (normalEndingTimer > 250) {
@@ -594,8 +686,6 @@
                     }
                 }
             }
-            
-            // DAMAGE SCREEN SHAKE JUMPSCARE ENGINE
             else if (isGameOver && jumpscareActive) {
                 deathSequenceTimer++;
                 camera.position.copy(jumpCamPos); camera.rotation.set(0, 0, 0); 
