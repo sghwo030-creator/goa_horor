@@ -3,46 +3,69 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TEROR TAMBANG: FITUR LARI</title>
+    <title>SNAFT #04: RITUAL KELAM</title>
     <style>
         body {
             margin: 0;
             overflow: hidden;
             background-color: #000;
             font-family: 'Courier New', Courier, monospace;
+            user-select: none;
         }
         #canvas-container {
             width: 100vw;
             height: 100vh;
-            transition: filter 0.1s;
         }
         #ui {
             position: absolute;
             top: 20px;
             left: 20px;
             color: #ff3333;
-            font-size: 18px;
+            font-size: 16px;
             text-shadow: 2px 2px 4px #000;
             pointer-events: none;
             z-index: 10;
+            opacity: 0;
+            transition: opacity 1s;
+        }
+        #vignette {
+            position: absolute;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: radial-gradient(circle, rgba(0,0,0,0) 20%, rgba(0,0,0,0.95) 100%);
+            pointer-events: none;
+            z-index: 4;
         }
         #blood-overlay {
             position: absolute;
             top: 0; left: 0; width: 100vw; height: 100vh;
-            background: radial-gradient(circle, rgba(255,0,0,0) 30%, rgba(150,0,0,0.8) 100%);
+            background: radial-gradient(circle, rgba(255,0,0,0) 30%, rgba(120,0,0,0.9) 100%);
             pointer-events: none;
             z-index: 5;
             opacity: 0;
+        }
+        #subtitles {
+            position: absolute;
+            bottom: 15%; left: 50%;
+            transform: translateX(-50%);
+            color: #ffffff;
+            font-size: 20px;
+            text-align: center;
+            text-shadow: 0 0 8px #000, 0 0 15px #ff0000;
+            z-index: 15;
+            pointer-events: none;
+            width: 80%;
+            font-weight: bold;
+            letter-spacing: 2px;
         }
         #instructions {
             position: absolute;
             top: 50%; left: 50%;
             transform: translate(-50%, -50%);
             color: white; text-align: center;
-            background: rgba(5, 5, 5, 0.98);
-            padding: 30px; border: 2px solid #550000;
-            border-radius: 5px; cursor: pointer; z-index: 20;
-            box-shadow: 0 0 20px #ff000033;
+            background: rgba(3, 3, 3, 0.98);
+            padding: 40px; border: 2px solid #3a0000;
+            border-radius: 4px; cursor: pointer; z-index: 20;
+            box-shadow: 0 0 30px rgba(255, 0, 0, 0.15);
         }
         #game-over {
             display: none;
@@ -69,56 +92,60 @@
 <body>
 
     <div id="canvas-container"></div>
+    <div id="vignette"></div>
     <div id="blood-overlay"></div>
+    <div id="subtitles"></div>
     
     <div id="ui">
-        <div>Radar Makhluk: <span id="distance">Mencari Sinyal...</span></div>
-        <div>Jalan Keluar Tambang: <span id="progress">360m</span></div>
-        <div style="font-size: 14px; color: #aaa; margin-top: 5px;">Kontrol: WASD + Hold SHIFT untuk Lari</div>
+        <div>Sinyal Detektor: <span id="distance">Hening...</span></div>
+        <div>Kedalaman Terowongan: <span id="progress">360m</span></div>
+        <div style="font-size: 13px; color: #888; margin-top: 5px;">[WASD] Jalan | [SHIFT] Lari</div>
     </div>
 
     <div id="instructions">
-        <h1 style="color: #8b0000; letter-spacing: 3px;">DEEP MINING SHAFT #04</h1>
-        <p>Lorong sempit rawan longsor. Sesuatu yang lapar mengejarmu dari belakang.</p>
-        <p style="color: #aaa; font-size: 14px; margin: 15px 0;">Gunakan <b>WASD</b> untuk bergerak, <b>MOUSE</b> untuk melihat, dan tahan <b>SHIFT</b> untuk LARI!</p>
-        <p style="font-weight: bold; color: #ff3333; margin-top: 20px;">[ KLIK UNTUK MASUK KE LORONG ]</p>
+        <h1 style="color: #660000; letter-spacing: 5px; margin-bottom: 5px;">SHAFT TAMBANG #04</h1>
+        <p style="color: #666; font-size: 12px; margin-top: 0;">Insiden Hilangnya Tim Evakuasi - 1994</p>
+        <p style="margin: 25px 0; color: #ccc; max-width: 400px; line-height: 1.6;">Kamu turun sendirian ke reruntuhan tambang bawah tanah tua untuk mencari kebenaran.</p>
+        <p style="font-weight: bold; color: #b00000; animation: blink 2s infinite;">[ KLIK UNTUK MEMULAI INVESTIGASI ]</p>
     </div>
 
     <div id="game-over">
-        MATI DIMAKAN WENDIGO!
-        <p style="font-size: 18px; color: #aaa; margin-top: 20px; font-weight: normal; letter-spacing: 0px;">Tubuhmu hancur di dalam kegelapan goa tambang.<br>Tekan <b style="color: #fff;">F5 (Refresh)</b> untuk mencoba lagi.</p>
+        JIWAMU MILIK WENDIGO
+        <p style="font-size: 16px; color: #777; margin-top: 20px; font-weight: normal; letter-spacing: 0px;">Jeritanmu terendam oleh tebalnya dinding batu bumi.<br>Tekan <b style="color: #fff;">F5</b> untuk mengulang mimpi buruk.</p>
     </div>
 
     <div id="game-win">
-        KAMU BERHASIL LOLOS!
-        <p style="font-size: 20px; color: white; margin-top: 20px; font-weight: normal;">Kamu melihat cahaya matahari dan selamat.</p>
+        KAMU MELIHAT CAHAYA
+        <p style="font-size: 20px; color: white; margin-top: 20px; font-weight: normal;">Kamu berhasil merangkak keluar tepat sebelum makhluk itu mencabik kakimu.</p>
     </div>
 
     <script>
-        // --- TEKSTUR BATU PROSEDURAL ---
+        // --- PROSEDURAL TEKSTUR BATU DETIL ---
         function generateNoiseTexture() {
-            const canvas = document.createElement('canvas');
-            canvas.width = 512; canvas.height = 512;
-            const ctx = canvas.getContext('2d');
-            ctx.fillStyle = '#222222'; ctx.fillRect(0, 0, 512, 512);
-            for (let i = 0; i < 30000; i++) {
+            const canvas = document.createElement('canvas'); canvas.width = 512; canvas.height = 512;
+            const ctx = canvas.getContext('2d'); ctx.fillStyle = '#181818'; ctx.fillRect(0, 0, 512, 512);
+            for (let i = 0; i < 40000; i++) {
                 let x = Math.random() * 512; let y = Math.random() * 512;
-                let shade = Math.floor(Math.random() * 80);
+                let shade = Math.floor(Math.random() * 65);
                 ctx.fillStyle = `rgb(${shade},${shade},${shade})`; ctx.fillRect(x, y, 2, 2);
             }
             const texture = new THREE.CanvasTexture(canvas);
-            texture.wrapS = THREE.RepeatWrapping; texture.wrapT = THREE.RepeatWrapping;
-            texture.repeat.set(4, 30);
+            texture.wrapS = THREE.RepeatWrapping; texture.wrapT = THREE.RepeatWrapping; texture.repeat.set(4, 35);
             return texture;
         }
 
         const bumpTex = generateNoiseTexture();
 
-        // --- SETUP AMBIENT ---
+        // --- SETUP DUNIA & GRAFIK ---
         const container = document.getElementById('canvas-container');
         const bloodOverlay = document.getElementById('blood-overlay');
+        const vignette = document.getElementById('vignette');
+        const subtitles = document.getElementById('subtitles');
+        const ui = document.getElementById('ui');
+
         const scene = new THREE.Scene();
-        scene.fog = new THREE.FogExp2(0x010102, 0.22);
+        // Set awal kabut sangat gelap dan tebal untuk menyembunyikan ujung lorong
+        scene.fog = new THREE.FogExp2(0x010103, 0.25);
 
         const camera = new THREE.PerspectiveCamera(65, window.innerWidth / window.innerHeight, 0.1, 1000);
         const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -133,19 +160,25 @@
         const playerHeight = 1.8;
         camera.position.set(0, playerHeight, 185);
         
-        // SISTEM KECEPATAN BARU (Jalan vs Lari)
-        const walkSpeed = 0.13;
-        const runSpeed = 0.24;
+        const walkSpeed = 0.11; const runSpeed = 0.22;
         const move = { forward: false, backward: false, left: false, right: false, sprint: false };
 
-        // --- KONTROL ---
+        // --- SISTEM TIMING CERITA & TRIGGER ---
+        let chaseStarted = false; 
+        let triggerSequenceActive = false;
+        let triggerTimer = 0;
+
+        // --- KONTROL EVENT ---
         const instructions = document.getElementById('instructions');
         instructions.addEventListener('click', () => { container.requestPointerLock(); });
 
         document.addEventListener('pointerlockchange', () => {
             if (document.pointerLockElement === container) {
                 instructions.style.display = 'none';
-                gameStarted = true;
+                if(!gameStarted) {
+                    gameStarted = true;
+                    showSubtitle("Dingin... Bau belerang dan besi berkarat menyengat hidungku.", 4000);
+                }
             } else if (!isGameOver && !isGameWin) {
                 instructions.style.display = 'block';
             }
@@ -153,9 +186,9 @@
 
         document.addEventListener('mousemove', (e) => {
             if (document.pointerLockElement !== container || isGameOver || isGameWin) return;
-            camera.rotation.y -= e.movementX * 0.002;
-            camera.rotation.x -= e.movementY * 0.002;
-            camera.rotation.x = Math.max(-Math.PI/2.5, Math.min(Math.PI/2.5, camera.rotation.x));
+            camera.rotation.y -= e.movementX * 0.0025;
+            camera.rotation.x -= e.movementY * 0.0025;
+            camera.rotation.x = Math.max(-Math.PI/2.4, Math.min(Math.PI/2.4, camera.rotation.x));
         });
 
         const handleKey = (e, isDown) => {
@@ -163,14 +196,22 @@
             if (e.key === 's' || e.key === 'ArrowDown') move.backward = isDown;
             if (e.key === 'a' || e.key === 'ArrowLeft') move.left = isDown;
             if (e.key === 'd' || e.key === 'ArrowRight') move.right = isDown;
-            if (e.key === 'Shift') move.sprint = isDown; // Deteksi Tombol Shift
+            if (e.key === 'Shift') move.sprint = isDown;
         };
         document.addEventListener('keydown', (e) => handleKey(e, true));
         document.addEventListener('keyup', (e) => handleKey(e, false));
 
-        // --- MAP GENERATION ---
+        function showSubtitle(text, duration) {
+            subtitles.innerText = text;
+            subtitles.style.opacity = 1;
+            if(duration) {
+                setTimeout(() => { if(subtitles.innerText === text) subtitles.style.opacity = 0; }, duration);
+            }
+        }
+
+        // --- ARSITEKTUR LORONG TAMBANG ---
         const rockMaterial = new THREE.MeshStandardMaterial({
-            color: 0x1c1a18, bumpMap: bumpTex, bumpScale: 0.05, roughness: 0.95, metalness: 0.1
+            color: 0x151413, bumpMap: bumpTex, bumpScale: 0.06, roughness: 0.98, metalness: 0.05
         });
 
         const floor = new THREE.Mesh(new THREE.PlaneGeometry(tunnelWidth, tunnelLength), rockMaterial); floor.rotation.x = -Math.PI / 2; scene.add(floor);
@@ -178,55 +219,73 @@
         const leftWall = new THREE.Mesh(new THREE.PlaneGeometry(tunnelLength, tunnelHeight), rockMaterial); leftWall.rotation.y = Math.PI / 2; leftWall.position.set(-tunnelWidth / 2, tunnelHeight / 2, 0); scene.add(leftWall);
         const rightWall = new THREE.Mesh(new THREE.PlaneGeometry(tunnelLength, tunnelHeight), rockMaterial); rightWall.rotation.y = -Math.PI / 2; rightWall.position.set(tunnelWidth / 2, tunnelHeight / 2, 0); scene.add(rightWall);
 
-        const woodMat = new THREE.MeshStandardMaterial({ color: 0x21140e, roughness: 0.9 });
-        const ironMat = new THREE.MeshStandardMaterial({ color: 0x3a3a3a, roughness: 0.5, metalness: 0.8 });
+        const woodMat = new THREE.MeshStandardMaterial({ color: 0x1a100b, roughness: 0.95 });
+        const ironMat = new THREE.MeshStandardMaterial({ color: 0x222222, roughness: 0.6, metalness: 0.8 });
 
         for (let z = -tunnelLength/2; z <= tunnelLength/2; z += 10) {
-            const postL = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.12, tunnelHeight), woodMat); postL.position.set(-tunnelWidth/2 + 0.15, tunnelHeight/2, z); scene.add(postL);
-            const postR = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.12, tunnelHeight), woodMat); postR.position.set(tunnelWidth/2 - 0.15, tunnelHeight/2, z); scene.add(postR);
-            const beamT = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, tunnelWidth), woodMat); beamT.rotation.z = Math.PI / 2; beamT.position.set(0, tunnelHeight - 0.1, z); scene.add(beamT);
-            const tie = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.05, 0.2), woodMat); tie.position.set(0, 0.02, z); scene.add(tie);
+            const postL = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.11, tunnelHeight), woodMat); postL.position.set(-tunnelWidth/2 + 0.15, tunnelHeight/2, z); scene.add(postL);
+            const postR = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.11, tunnelHeight), woodMat); postR.position.set(tunnelWidth/2 - 0.15, tunnelHeight/2, z); scene.add(postR);
+            const beamT = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.09, tunnelWidth), woodMat); beamT.rotation.z = Math.PI / 2; beamT.position.set(0, tunnelHeight - 0.1, z); scene.add(beamT);
+            const tie = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.04, 0.18), woodMat); tie.position.set(0, 0.02, z); scene.add(tie);
         }
 
-        const railL = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.06, tunnelLength), ironMat); railL.position.set(-0.8, 0.05, 0); scene.add(railL);
-        const railR = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.06, tunnelLength), ironMat); railR.position.set(0.8, 0.05, 0); scene.add(railR);
+        const railL = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.05, tunnelLength), ironMat); railL.position.set(-0.8, 0.04, 0); scene.add(railL);
+        const railR = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.05, tunnelLength), ironMat); railR.position.set(0.8, 0.04, 0); scene.add(railR);
 
-        // --- LIGHTS ---
-        const flashlight = new THREE.SpotLight(0xfffbe6, 3, 28, Math.PI / 5.5, 0.5, 1.2); scene.add(flashlight);
+        // --- AURA PARTIKEL: DEBU MELAYANG (Mine Dust Particles) ---
+        const particleCount = 450;
+        const particleGeo = new THREE.BufferGeometry();
+        const positions = new Float32Array(particleCount * 3);
+
+        for (let i = 0; i < particleCount * 3; i += 3) {
+            positions[i] = (Math.random() - 0.5) * tunnelWidth;
+            positions[i+1] = Math.random() * tunnelHeight;
+            positions[i+2] = (Math.random() - 0.5) * tunnelLength;
+        }
+        particleGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+        const particleMat = new THREE.PointsMaterial({
+            color: 0xaaaaaa, size: 0.04, transparent: true, opacity: 0.4, blending: THREE.AdditiveBlending
+        });
+        const dustParticles = new THREE.Points(particleGeo, particleMat);
+        scene.add(dustParticles);
+
+        // --- SISTEM CAHAYA SENTER ---
+        const flashlight = new THREE.SpotLight(0xfff8e3, 3, 26, Math.PI / 6, 0.5, 1.3); scene.add(flashlight);
         flashlight.target = new THREE.Object3D(); scene.add(flashlight.target);
-        const ambient = new THREE.AmbientLight(0x020203, 0.2); scene.add(ambient);
+        const ambient = new THREE.AmbientLight(0x010102, 0.15); scene.add(ambient);
 
-        // --- MODEL MONSTER WENDIGO ---
+        // --- MODEL MONSTER WENDIGO (TERSEMBUNYI DI AWAL) ---
         const wendigo = new THREE.Group();
-        const bodyMat = new THREE.MeshStandardMaterial({ color: 0x050505, roughness: 1.0 });
+        const bodyMat = new THREE.MeshStandardMaterial({ color: 0x030303, roughness: 1.0 });
 
-        const torso = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.05, 2.5), bodyMat); torso.position.y = 1.6; wendigo.add(torso);
+        const torso = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.04, 2.5), bodyMat); torso.position.y = 1.6; wendigo.add(torso);
         const head = new THREE.Mesh(new THREE.SphereGeometry(0.24, 8, 8), bodyMat); head.position.y = 2.9; wendigo.add(head);
 
         const jawGeo = new THREE.ConeGeometry(0.16, 0.4, 4);
         const jawMat = new THREE.MeshBasicMaterial({ color: 0x000000 });
         const jaw = new THREE.Mesh(jawGeo, jawMat); jaw.position.set(0, 2.62, 0.05); jaw.rotation.x = Math.PI; wendigo.add(jaw);
 
-        const antlerMat = new THREE.MeshBasicMaterial({ color: 0x010101 });
+        const antlerMat = new THREE.MeshBasicMaterial({ color: 0x000000 });
         for(let i = 0; i < 4; i++) {
-            const horn = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.3, 0.03), antlerMat); horn.position.set(i % 2 === 0 ? 0.15 : -0.15, 3.1 + (i*0.05), 0); horn.rotation.z = i % 2 === 0 ? 0.5 + (i*0.2) : -0.5 - (i*0.2); wendigo.add(horn);
+            const horn = new THREE.Mesh(new THREE.BoxGeometry(0.02, 0.35, 0.02), antlerMat); horn.position.set(i % 2 === 0 ? 0.16 : -0.16, 3.15 + (i*0.05), 0); horn.rotation.z = i % 2 === 0 ? 0.6 + (i*0.2) : -0.6 - (i*0.2); wendigo.add(horn);
         }
 
         const eyeMat = new THREE.MeshBasicMaterial({ color: 0xff0000 });
         const eyeL = new THREE.Mesh(new THREE.SphereGeometry(0.05, 6, 6), eyeMat); eyeL.position.set(-0.09, 2.9, 0.18);
         const eyeR = new THREE.Mesh(new THREE.SphereGeometry(0.05, 6, 6), eyeMat); eyeR.position.set(0.09, 2.9, 0.18); wendigo.add(eyeL, eyeR);
 
-        const armL = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.02, 2.2), bodyMat); armL.position.set(-0.25, 1.8, 0.2); armL.rotation.z = 0.2; armL.rotation.x = 0.4; wendigo.add(armL);
-        const armR = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.02, 2.2), bodyMat); armR.position.set(0.25, 1.8, 0.2); armR.rotation.z = -0.2; armR.rotation.x = 0.4; wendigo.add(armR);
+        const armL = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.015, 2.4), bodyMat); armL.position.set(-0.25, 1.8, 0.2); armL.rotation.z = 0.2; armL.rotation.x = 0.5; wendigo.add(armL);
+        const armR = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.015, 2.4), bodyMat); armR.position.set(0.25, 1.8, 0.2); armR.rotation.z = -0.2; armR.rotation.x = 0.5; wendigo.add(armR);
 
-        const wendigoGlow = new THREE.PointLight(0xff0000, 1.8, 8); wendigoGlow.position.y = 2; wendigo.add(wendigoGlow);
+        const wendigoGlow = new THREE.PointLight(0xff0000, 0, 8); wendigoGlow.position.y = 2.8; wendigo.add(wendigoGlow);
 
-        wendigo.position.set(0, 0, 196); scene.add(wendigo);
+        // Taruh wendigo jauh sekali di belakang area start awal
+        wendigo.position.set(0, -10, 220); 
+        scene.add(wendigo);
         
-        // Sedikit menaikkan kecerdasan speed wendigo agar seimbang dengan fitur lari player
-        const wendigoBaseSpeed = 0.152;
+        const wendigoBaseSpeed = 0.155;
 
-        // --- GAME SYSTEM DATA ---
+        // --- DATA UI LINK ---
         const distanceUI = document.getElementById('distance');
         const progressUI = document.getElementById('progress');
         const gameOverUI = document.getElementById('game-over');
@@ -234,119 +293,199 @@
 
         let jumpscareActive = false;
         let deathSequenceTimer = 0;
-        const jumpscareDuration = 70;
+        const jumpscareDuration = 75;
         let jumpCamPos = new THREE.Vector3();
 
+        // --- ANIMASI GAME LOOP ---
         function animate() {
             requestAnimationFrame(animate);
             const time = clock.getElapsedTime();
 
+            // Efek Denyut Jantung pada Vignette (Aura Ketakutan)
+            let heartBeat = 1 + Math.sin(time * (chaseStarted ? 7 : 2.5)) * (chaseStarted ? 0.08 : 0.02);
+            vignette.style.transform = `scale(${heartBeat})`;
+
+            // Menggerakkan debu melayang secara perlahan
+            const posAttr = dustParticles.geometry.attributes.position;
+            for (let i = 1; i < posAttr.count * 3; i += 3) {
+                posAttr.array[i] -= 0.002; // debu turun perlahan
+                if (posAttr.array[i] < 0) posAttr.array[i] = tunnelHeight;
+            }
+            posAttr.needsUpdate = true;
+
             if (gameStarted && !isGameOver && !isGameWin) {
+                // Posisi Senter Mengikuti Kamera
                 flashlight.position.copy(camera.position);
                 const dir = new THREE.Vector3();
                 camera.getWorldDirection(dir);
                 flashlight.target.position.copy(camera.position).add(dir);
 
-                const distance = camera.position.distanceTo(wendigo.position);
-
-                if (distance < 16 && Math.random() < (16 - distance) * 0.06) {
-                    flashlight.intensity = 0.05;
-                } else {
-                    flashlight.intensity = 2.5 + Math.sin(time * 2) * 0.1;
-                }
-
-                // TENTUKAN SPEED BERDASARKAN SHIFT KEY
+                // LOGIKA ATUR GERAKAN PLAYER
                 let currentSpeed = move.sprint ? runSpeed : walkSpeed;
-
                 const forwardVec = new THREE.Vector3(dir.x, 0, dir.z).normalize();
                 const sideVec = new THREE.Vector3().crossVectors(camera.up, forwardVec).normalize();
+                
                 let isMoving = false;
-                if (move.forward) { camera.position.addScaledVector(forwardVec, currentSpeed); isMoving = true; }
-                if (move.backward) { camera.position.addScaledVector(forwardVec, -currentSpeed); isMoving = true; }
-                if (move.left) { camera.position.addScaledVector(sideVec, currentSpeed); isMoving = true; }
-                if (move.right) { camera.position.addScaledVector(sideVec, -currentSpeed); isMoving = true; }
+                // Hanya izinkan bergerak jika tidak sedang terkena urutan cinematic mati lampu
+                if (!triggerSequenceActive) {
+                    if (move.forward) { camera.position.addScaledVector(forwardVec, currentSpeed); isMoving = true; }
+                    if (move.backward) { camera.position.addScaledVector(forwardVec, -currentSpeed); isMoving = true; }
+                    if (move.left) { camera.position.addScaledVector(sideVec, currentSpeed); isMoving = true; }
+                    if (move.right) { camera.position.addScaledVector(sideVec, -currentSpeed); isMoving = true; }
+                }
 
-                // EFEK BOBBING DINAMIS (Makin cepat kalau lari)
+                // Efek Kamera Naik-Turun (Head Bobbing)
                 if (isMoving) {
-                    let bobSpeed = move.sprint ? 18 : 12;  // Ayunan kaki lebih cepat saat lari
-                    let bobAmount = move.sprint ? 0.12 : 0.06; // Ayunan naik-turun lebih ekstrem saat lari
+                    let bobSpeed = move.sprint ? 18 : 12;
+                    let bobAmount = move.sprint ? 0.13 : 0.05;
                     camera.position.y = playerHeight + Math.sin(time * bobSpeed) * bobAmount;
-                    
-                    // Efek senter ikut goyang kiri-kanan karena getaran berlari
-                    if (move.sprint) {
-                        flashlight.target.position.x += Math.cos(time * 18) * 0.05;
-                    }
+                    if (move.sprint) flashlight.target.position.x += Math.cos(time * 18) * 0.06;
                 } else {
                     camera.position.y = playerHeight + Math.sin(time * 1.5) * 0.01;
                 }
 
+                // Batasan Dinding Lorong
                 camera.position.x = Math.max(-tunnelWidth/2 + 0.6, Math.min(tunnelWidth/2 - 0.6, camera.position.x));
-                camera.position.z = Math.min(190, camera.position.z);
+                camera.position.z = Math.min(189, camera.position.z);
 
-                wendigo.lookAt(camera.position.x, wendigo.position.y, camera.position.z);
-                const wendigoDir = new THREE.Vector3().subVectors(camera.position, wendigo.position);
-                wendigoDir.y = 0; wendigoDir.normalize();
-                
-                // Jika pemain makin jauh ke depan (mendekati finish), Wendigo akan marah dan lari ekstra kencang!
-                let wendigoSpeedMultiplier = camera.position.z < 0 ? 1.25 : 1.0;
-                wendigo.position.addScaledVector(wendigoDir, wendigoBaseSpeed * wendigoSpeedMultiplier);
-                
-                armL.rotation.x = 0.4 + Math.sin(time * 25) * 0.15; armR.rotation.x = 0.4 + Math.cos(time * 25) * 0.15;
-
-                if (distance > 20) {
-                    distanceUI.innerText = "Aman (Jauh)"; distanceUI.style.color = "#33ff33"; bloodOverlay.style.opacity = 0;
-                } else if (distance > 8) {
-                    distanceUI.innerText = "MENDEKAT SECARA CEPAT!"; distanceUI.style.color = "#ffff33"; bloodOverlay.style.opacity = (20 - distance) / 20;
-                } else {
-                    distanceUI.innerText = "DIA TEPAT DI BELAKANGMU!!!"; distanceUI.style.color = "#ff0000"; bloodOverlay.style.opacity = 0.8;
+                // -------------------------------------------------------------
+                // SISTEM TIMELINE CERITA & TRIGGER BERLARI MID-GAME
+                // -------------------------------------------------------------
+                // Jembatan Trigger: Ketika player berjalan maju sejauh 35 meter (Z kedudukan < 150)
+                if (!chaseStarted && !triggerSequenceActive && camera.position.z < 150) {
+                    triggerSequenceActive = true;
+                    triggerTimer = 0;
                 }
 
+                if (triggerSequenceActive && !chaseStarted) {
+                    triggerTimer++;
+                    
+                    if (triggerTimer < 100) {
+                        // Tahap 1: Senter meredup parah
+                        flashlight.intensity = Math.random() * 0.3;
+                        showSubtitle("Tunggu... Kenapa udaranya menjadi sedingin es?", 1000);
+                    } else if (triggerTimer >= 100 && triggerTimer < 220) {
+                        // Tahap 2: Senter mati total gulita!
+                        flashlight.intensity = 0;
+                        showSubtitle("Senter kayu sialan ini mati... Ada bau bangkai membusuk...", 2000);
+                    } else if (triggerTimer >= 220 && triggerTimer < 320) {
+                        // Tahap 3: Suara Raungan Ghaib (Teks Merah)
+                        showSubtitle("!! KRETEEEKK... NYYEEAAAGHH !!!", 3000);
+                        subtitles.style.color = "#ff0000";
+                        // Posisikan wendigo diam-diam tepat di belakang player untuk siap mengejar
+                        wendigo.position.set(0, 0, camera.position.z + 18);
+                        wendigoGlow.intensity = 2;
+                    } else if (triggerTimer >= 320) {
+                        // Tahap 4: Senter Hidup, Pengejaran Wendigo Resmi Dimulai!
+                        triggerSequenceActive = false;
+                        chaseStarted = true;
+                        subtitles.style.color = "#ffffff";
+                        showSubtitle("SESUATU MERANGKAK CEPAT DARI BELAKANG! LARI!!!", 4000);
+                        ui.style.opacity = 1; // Munculkan HUD radar keselamatan
+                    }
+                }
+
+                // LOGIKA KETIKA WENDIGO SUDAH AKTIF MENGEJAR
+                if (chaseStarted) {
+                    const distance = camera.position.distanceTo(wendigo.position);
+
+                    // Kontrol Kedipan Senter Berdasarkan Jarak Monster
+                    if (distance < 15 && Math.random() < (15 - distance) * 0.07) {
+                        flashlight.intensity = 0.02;
+                    } else {
+                        flashlight.intensity = 2.6 + Math.sin(time * 3) * 0.15;
+                    }
+
+                    // Pergerakan AI Wendigo mengejar posisi player
+                    wendigo.lookAt(camera.position.x, wendigo.position.y, camera.position.z);
+                    const wendigoDir = new THREE.Vector3().subVectors(camera.position, wendigo.position);
+                    wendigoDir.y = 0; wendigoDir.normalize();
+                    
+                    // Kecepatan adaptif wendigo bertambah cepat di kedalaman goa
+                    let wendigoSpeedMultiplier = camera.position.z < 0 ? 1.28 : 1.02;
+                    wendigo.position.addScaledVector(wendigoDir, wendigoBaseSpeed * wendigoSpeedMultiplier);
+                    
+                    // Animasi cakar wendigo mengayun buas
+                    armL.rotation.x = 0.5 + Math.sin(time * 28) * 0.2; 
+                    armR.rotation.x = 0.5 + Math.cos(time * 28) * 0.2;
+
+                    // DINAMIKA AURA MERAH & KABUT (Makin dekat monster, aura layar makin gila)
+                    if (distance > 22) {
+                        distanceUI.innerText = "Aman"; distanceUI.style.color = "#33ff33"; 
+                        bloodOverlay.style.opacity = 0;
+                        scene.fog.density = 0.25;
+                    } else if (distance > 9) {
+                        distanceUI.innerText = "MENDEKAT!!"; distanceUI.style.color = "#ffff33"; 
+                        bloodOverlay.style.opacity = (22 - distance) / 22 * 0.6;
+                        scene.fog.density = 0.25 + (22 - distance) * 0.01; // Kabut menebal membatasi pandangan
+                    } else {
+                        distanceUI.innerText = "TEPAT DI BELAKANGMU!!!"; distanceUI.style.color = "#ff0000"; 
+                        bloodOverlay.style.opacity = 0.85;
+                        scene.fog.density = 0.45; // Aura kegelapan pekat menyelimuti player
+                    }
+
+                    // KONDISI TERTANGKAP: JUMPSCARE BRUTAL DIPAKSA PICU
+                    if (distance < 1.75) {
+                        isGameOver = true;
+                        jumpscareActive = true;
+                        document.exitPointerLock();
+                        subtitles.style.opacity = 0;
+
+                        // Mengunci titik intersepsi arah wajah wendigo secara instan tepat di depan kamera
+                        let faceDir = new THREE.Vector3().subVectors(camera.position, wendigo.position);
+                        faceDir.y = 0; faceDir.normalize();
+                        
+                        jumpCamPos.copy(wendigo.position);
+                        jumpCamPos.y += 2.82; 
+                        jumpCamPos.addScaledVector(faceDir, 0.85); 
+                    }
+                }
+
+                // Update Sisa Jarak Keluar UI
                 progressUI.innerText = Math.max(0, Math.round(camera.position.z - (-185))) + " meter";
 
-                if (distance < 1.8) {
-                    isGameOver = true;
-                    jumpscareActive = true;
-                    document.exitPointerLock();
-
-                    let faceDir = new THREE.Vector3().subVectors(camera.position, wendigo.position);
-                    faceDir.y = 0; faceDir.normalize();
-                    
-                    jumpCamPos.copy(wendigo.position);
-                    jumpCamPos.y += 2.8; 
-                    jumpCamPos.addScaledVector(faceDir, 0.9); 
-                }
-
+                // Kondisi Menang (Mencapai Ujung Lorong Tambang)
                 if (camera.position.z <= -185) {
                     isGameWin = true;
                     document.exitPointerLock();
                     gameWinUI.style.display = 'block';
+                    subtitles.style.opacity = 0;
                 }
             } 
             
+            // -------------------------------------------------------------
+            // LOGIKA EKSEKUSI JUMPSCARE BRUTAL DENGAN SCREEN SHATTER EFFECT
+            // -------------------------------------------------------------
             else if (isGameOver && jumpscareActive) {
                 deathSequenceTimer++;
 
+                // Paksa kamera nempel di depan bola matanya yang merah menyala
                 camera.position.copy(jumpCamPos);
                 camera.rotation.set(0, 0, 0); 
-                camera.lookAt(wendigo.position.x, wendigo.position.y + 2.8, wendigo.position.z);
+                camera.lookAt(wendigo.position.x, wendigo.position.y + 2.85, wendigo.position.z);
 
-                camera.fov = 32;
+                // Zoom fov ekstrem membuat rahang hitam monster terlihat raksasa
+                camera.fov = 30;
                 camera.updateProjectionMatrix();
 
                 const canvasElement = renderer.domElement;
                 if (deathSequenceTimer < jumpscareDuration) {
-                    let shakeX = (Math.random() - 0.5) * 50;
-                    let shakeY = (Math.random() - 0.5) * 50;
-                    canvasElement.style.transform = `translate(${shakeX}px, ${shakeY}px) scale(1.2)`;
+                    // Guncangan brutal pada CSS DOM Elemen Canvas browser
+                    let shakeX = (Math.random() - 0.5) * 65;
+                    let shakeY = (Math.random() - 0.5) * 65;
+                    canvasElement.style.transform = `translate(${shakeX}px, ${shakeY}px) scale(1.25)`;
                     
-                    wendigoGlow.intensity = 30 + Math.random() * 20;
+                    // Aura titik merah menyala hancur di wajah wendigo
+                    wendigoGlow.intensity = 45 + Math.random() * 25;
                     flashlight.intensity = 0; 
 
-                    bloodOverlay.style.background = Math.random() > 0.4 ? "rgba(220, 0, 0, 0.98)" : "rgba(10, 0, 0, 0.99)";
+                    // Kilatan darah merah/hitam konstan di layar monitor
+                    bloodOverlay.style.background = Math.random() > 0.35 ? "rgba(230, 0, 0, 0.99)" : "rgba(5, 5, 5, 1.0)";
                     bloodOverlay.style.opacity = 1;
                 } else {
+                    // Jumpscare usai, kunci layar hitam pekat, tampilkan teks kekalahan UI
                     canvasElement.style.transform = 'none';
-                    bloodOverlay.style.background = "rgba(100, 0, 0, 0.95)";
+                    bloodOverlay.style.background = "rgba(0, 0, 0, 0.98)";
                     gameOverUI.style.display = 'block';
                     jumpscareActive = false;
                 }
